@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		3448C9D2258ADD6D0020FF2E /* Tokenizer.c in Sources */ = {isa = PBXBuildFile; fileRef = 3448C9D1258ADD6D0020FF2E /* Tokenizer.c */; };
 		344D8FB5258E58E900633FE8 /* struniq.c in Sources */ = {isa = PBXBuildFile; fileRef = 344D8FB4258E58E900633FE8 /* struniq.c */; };
+		344D8FB9258EB29700633FE8 /* hashSet.c in Sources */ = {isa = PBXBuildFile; fileRef = 344D8FB8258EB29700633FE8 /* hashSet.c */; };
+		344D8FBD258F2CB400633FE8 /* hash.c in Sources */ = {isa = PBXBuildFile; fileRef = 344D8FBC258F2CB400633FE8 /* hash.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -28,6 +30,10 @@
 		3448C9D1258ADD6D0020FF2E /* Tokenizer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Tokenizer.c; sourceTree = "<group>"; };
 		344D8FB3258E58E900633FE8 /* struniq.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = struniq.h; sourceTree = "<group>"; };
 		344D8FB4258E58E900633FE8 /* struniq.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = struniq.c; sourceTree = "<group>"; };
+		344D8FB7258EB29700633FE8 /* hashSet.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hashSet.h; sourceTree = "<group>"; };
+		344D8FB8258EB29700633FE8 /* hashSet.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = hashSet.c; sourceTree = "<group>"; };
+		344D8FBB258F2CB400633FE8 /* hash.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hash.h; sourceTree = "<group>"; };
+		344D8FBC258F2CB400633FE8 /* hash.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = hash.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +69,10 @@
 				3448C9D1258ADD6D0020FF2E /* Tokenizer.c */,
 				344D8FB3258E58E900633FE8 /* struniq.h */,
 				344D8FB4258E58E900633FE8 /* struniq.c */,
+				344D8FB7258EB29700633FE8 /* hashSet.h */,
+				344D8FB8258EB29700633FE8 /* hashSet.c */,
+				344D8FBB258F2CB400633FE8 /* hash.h */,
+				344D8FBC258F2CB400633FE8 /* hash.c */,
 			);
 			path = L1962;
 			sourceTree = "<group>";
@@ -125,6 +135,8 @@
 			files = (
 				344D8FB5258E58E900633FE8 /* struniq.c in Sources */,
 				3448C9D2258ADD6D0020FF2E /* Tokenizer.c in Sources */,
+				344D8FB9258EB29700633FE8 /* hashSet.c in Sources */,
+				344D8FBD258F2CB400633FE8 /* hash.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

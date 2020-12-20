@@ -10,6 +10,8 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+#include "struniq.h"
+
 /**
  An Enum for Tokens
  */
@@ -43,6 +45,7 @@ typedef struct {
 } Token;
 
 /**
+    Checks if a character is part of the allowed character set for the beginning of a symbol token
  @param c   The character to check if it is in the set for a valid symbol token (leading symbol)
  @return True if in set, false if not
  */
@@ -55,6 +58,7 @@ int isSymbol(int c){
 }
 
 /**
+    Checks if a character is part of the allowed character set for the contiuation of a symbol token
  @param c   The character to check if it is in the set for a valid symbol token (non-leading symbol)
  @return True if in set, false if not
  */
@@ -67,6 +71,7 @@ int isSymbolContinue(int c){
 }
 
 /**
+    Reads a token and only one token
  @param fp   The file pointer for the file to be read and tokenized
  @return The next Token in the file as a Token struct
  */
@@ -142,13 +147,14 @@ Token readToken(FILE *fp) {
     } else if (id == REAL){     // if REAL, atof()
         token.value.r = atof(buf);
     } else {                    // else (SYMBOL), write the buffer (via strdup)
-        token.value.s = strdup(buf);
+        token.value.s = struniq(buf);
     }
     return token;
 }
 
 
 /**
+    Prints a token according to style
  @param token   The token to print
  */
 void printToken(Token token){
@@ -191,6 +197,7 @@ void printToken(Token token){
 }
 
 /**
+    Reads a file (can be stdin) and reads each token individually and prints them
  @param fp   The file pointer for the file to be read and tokenized
  */
 void readFile(FILE *fp){
@@ -210,8 +217,8 @@ void readFile(FILE *fp){
     }
 }
 
-
 int main(int argc, char **argv){
+    hashInit();
     if (argc == 1){     // If one arg, tokenize stdin
         readFile(stdin);
     } else {            // If more than one arg, args past calling arg will be files to tokenize
