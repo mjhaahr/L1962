@@ -18,7 +18,7 @@
 enum TokenType {
     END = -1,        // End of a Token
     INVALID = 0,
-    SYMBOL = 1,      // [A-Za-z+*/%!?&^|<>][A-Za-z+\-*/%!?&^|<>]*
+    SYMBOL = 1,      // [A-Za-z+*/%!?&^|<>][A-Za-z0-9+\-*/%!?&^|<>]*
     INT = 2,         // -?[0-9]*
     OPENP = 3,       // (
     CLOSEP = 4,      // )
@@ -63,7 +63,7 @@ int isSymbol(int c){
  @return True if in set, false if not
  */
 int isSymbolContinue(int c){
-    if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) || (c == '+') || (c == '\\') || (c == '-') || (c == '*') || (c == '/') || (c == '%') || (c == '!') || (c == '?') || (c == '&') || (c == '^') || (c == '|') || (c == '<') || (c == '>')){
+    if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) || ((c >= '0') && (c <= '9')) || (c == '+') || (c == '\\') || (c == '-') || (c == '*') || (c == '/') || (c == '%') || (c == '!') || (c == '?') || (c == '&') || (c == '^') || (c == '|') || (c == '<') || (c == '>')){
         return 1;
     } else {
         return 0;
@@ -206,7 +206,6 @@ void readFile(FILE *fp){
         if (token.type == END) {
             break;
         }
-        
         if (token.type == INVALID){
             printToken(token);
         } else {

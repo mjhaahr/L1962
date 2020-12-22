@@ -10,11 +10,13 @@
 const char *struniq(const char *s){
     const char *out = get(s);
     if (out == NULL){ // Not already seen (e.g. unique)
-        const char *out = add(s);
-        printf("%p\t", out);
+        out = add(strdup(s));
+        //printf("%p\t", out);
+        //printf("Unique\t");
         return out;
     } else { // In map // Seen alreay (pull from list)
-        printf("%p\t", out);
+        //printf("%p\t", out);
+        //printf("Found\t");
         return out;
     }
 }

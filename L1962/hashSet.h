@@ -18,6 +18,11 @@
  */
 void hashInit(void);
 
+/**
+    Resizes hashSet by 2n+1
+ */
+void resize(void);
+
 
 /**
     Hasing Function, adapts the hashCode method from hash.h to the space needed

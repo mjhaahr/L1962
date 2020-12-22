@@ -8,14 +8,36 @@
 #include "hashSet.h"
 
 unsigned int size = 101;
+unsigned int stored = 0;
 
 // The hashed array
-char **set; //initialized in init
+const char **set; //initialized in init
 
 void hashInit(void){
-    set = malloc(size);
+    set = malloc(size * sizeof(char*));
     for (int i = 0; i < size; i++){
         set[i] = NULL;
+    }
+}
+
+void resize(void){
+    if (stored >= (size * 3 / 4)){ // Checks how full
+        unsigned int oldSize = size;
+        size = 2 * oldSize + 1;
+        const char **oldSet = set;
+        set = malloc(size * sizeof(char*));
+        
+        for (int i = 0; i < size; i++){ // Refill
+            set[i] = NULL;
+        }
+        stored = 0;
+        for (int i = 0; i < oldSize; i++){ // Copy
+            if (oldSet[i] != NULL){
+                add(oldSet[i]);
+            }
+        }
+        free(oldSet);
+        //printf("Resized:\t New Size: %u, Old Size: %u, 3/4 Old Size: %u, Stored %u\t", size, oldSize, (oldSize * 3 / 4), stored);
     }
 }
 
@@ -24,25 +46,24 @@ unsigned int hashing(const char *s){
 }
 
 const char *add(const char *s){
-    char *out = strdup(s);
-    unsigned int hash = hashing(s);
-    if (set[hash] == NULL){
-        set[hash] = out;
-    } else { // Collision
-        fprintf(stderr, "HashSet Collision\n");
-        exit(1);
+    resize(); // Resize if needed
+    unsigned int index = hashing(s);
+    while(set[index] != NULL){
+        index = (index + 1) % size;
     }
-    return out;
+    set[index] = s;
+    stored++;
+    return s;
 }
 
 const char *get(const char *s){
-    char *hashed = set[hashing(s)];
-    if (hashed == NULL){
-        return NULL;
-    } else if (strcmp(s, hashed) == 0){ // If the input is equal to the stored value, return stored, else NULL
-        return hashed;
-    } else {
-        fprintf(stderr, "Hash Get Error, no clue why\n");
-        exit(1);
+    //printf("get(\"%s\")\thashing = %d\n", s, hashing(s));
+    int index = hashing(s);
+    while(set[index] != NULL){
+        if (strcmp(s, set[index]) == 0){
+            return set[index];
+        }
+        index = (index + 1) % size;
     }
+    return NULL;
 }
