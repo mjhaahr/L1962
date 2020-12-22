@@ -5,44 +5,7 @@
 //
 //  Created by Matthew Haahr on 12/16/20.
 //
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <stdlib.h>
-
-#include "struniq.h"
-
-/**
- An Enum for Tokens
- */
-enum TokenType {
-    END = -1,        // End of a Token
-    INVALID = 0,
-    SYMBOL = 1,      // [A-Za-z+*/%!?&^|<>][A-Za-z0-9+\-*/%!?&^|<>]*
-    INT = 2,         // -?[0-9]*
-    OPENP = 3,       // (
-    CLOSEP = 4,      // )
-    QUOTE = 5,       // '
-    REAL = 6,        // -?[0-9]*.[0-9]*
-};
-
-/**
-    TokenValue Union
- */
-typedef union {
-    const char *s;  // for SYMBOL
-    int64_t i;      // for INT
-    double r;       // for REAL
-    char e;         // for INVALID (if error)
-} TokenValue;
-
-/**
-    A Token Struct
- */
-typedef struct {
-    enum TokenType type;    // Token type
-    TokenValue value;       // Token Value
-} Token;
+#include "Tokenizer.h"
 
 /**
     Checks if a character is part of the allowed character set for the beginning of a symbol token
@@ -70,17 +33,11 @@ int isSymbolContinue(int c){
     }
 }
 
-/**
-    Reads a token and only one token
- @param fp   The file pointer for the file to be read and tokenized
- @return The next Token in the file as a Token struct
- */
-
 Token readToken(FILE *fp) {
     Token token;
     int c = getc(fp);      // Gets next char in fp
     if (c == EOF) {         // Early return if EF
-        token.type = END;
+        token.type = TOKEN_END;
         return token;
     }
     
@@ -90,7 +47,7 @@ Token readToken(FILE *fp) {
     enum TokenType id;      // Matching ID for the given char
     
     if (isSymbol(c)) {
-        id = SYMBOL;
+        id = TOKEN_SYMBOL;
         buf[index++] = c;
         for (c = getc(fp); isSymbolContinue(c); c = getc(fp)) { // While is a matching symbol add to buffer and increment index
             buf[index++] = c;
@@ -98,32 +55,50 @@ Token readToken(FILE *fp) {
         ungetc(c, fp);      // Roll position in fp back to allow proper reading
         buf[index] = 0;     // End Token Value
     } else if (((c >= '0') && (c <= '9')) || (c == '-')) {
-        id = INT;
+        id = TOKEN_INT;
         buf[index++] = c;
         int decimal = 1;    // Decimal signifier
         for (c = getc(fp); (((c >= '0') && (c <= '9')) || ((c == '.') && decimal)); c = getc(fp)) { // While is a number or is the first decimal point '.' seen, add to buffer  and increment index
             buf[index++] = c;
             if (c == '.'){  // If decimal is seen (has to be first), change flag and change ID to real
                 decimal = 0;
-                id = REAL;
+                id = TOKEN_REAL;
             }
         }
         ungetc(c, fp);      // Roll position in fp back to allow proper reading
         buf[index] = 0;     // End Token Value
     } else if (c == '(') {
         index++;
-        token.type = OPENP;
+        token.type = TOKEN_OPENP;
         return token;
     } else if (c == ')') {
         index++;
-        token.type = CLOSEP;
+        token.type = TOKEN_CLOSEP;
         return token;
     } else if (c == '\'') {
         index++;
-        token.type = QUOTE;
+        token.type = TOKEN_QUOTE;
         return token;
+    } else if (c == '.') {
+        c = getc(fp); // For get next
+        if (!((c >= '0') && (c <= '9'))){
+            id = TOKEN_DOT;
+            ungetc(c, fp);
+            index++;
+            token.type = TOKEN_DOT;
+            return token;
+        } else {
+            id = TOKEN_REAL;
+            while ((c >= '0') && (c <= '9')) { // Real
+                buf[index++] = c;
+                c = getc(fp);
+            }
+            ungetc(c, fp);      // Roll position in fp back to allow proper reading
+            buf[index] = 0;     // End Token Value
+        }
+       
     } else {
-        token.type = INVALID;
+        token.type = TOKEN_INVALID;
         if (isspace(c)){    // Valid Token break (whitespace or ';')
             token.value.e = 0;
         } else {            // Invalid Token type (char not valid)
@@ -138,57 +113,56 @@ Token readToken(FILE *fp) {
         return token;
     }
     
-    // If it reaches the end of the if without returning, it is of type INT, REAL, or SYMBOL, that is given
+    // If it reaches the end of the if without returning, it is of type INT, REAL, or TOKEN_SYMBOL, that is given
     
     
     token.type = id;
-    if (id == INT){             // if INT, atoi()
+    if (id == TOKEN_INT){             // if INT, atoi()
         token.value.i = atoi(buf);
-    } else if (id == REAL){     // if REAL, atof()
+    } else if (id == TOKEN_REAL){     // if REAL, atof()
         token.value.r = atof(buf);
-    } else {                    // else (SYMBOL), write the buffer (via strdup)
+    } else {                    // else (TOKEN_SYMBOL), write the buffer (via strdup)
         token.value.s = struniq(buf);
     }
     return token;
 }
 
-
-/**
-    Prints a token according to style
- @param token   The token to print
- */
 void printToken(Token token){
     switch (token.type) {
-        case INVALID:
+        case TOKEN_INVALID:
             if (token.value.e != 0){
                 printf("INVALID Token: %c\n", token.value.e);
             }
             break;
             
-        case SYMBOL:
+        case TOKEN_SYMBOL:
             printf("%s", token.value.s);
             break;
             break;
             
-        case INT:
+        case TOKEN_INT:
             printf("%lld", token.value.i);
             break;
             break;
             
-        case OPENP:
+        case TOKEN_OPENP:
             printf("(");
             break;
             
-        case CLOSEP:
+        case TOKEN_CLOSEP:
             printf(")");
             break;
             
-        case QUOTE:
+        case TOKEN_QUOTE:
             printf("'");
             break;
             
-        case REAL:
+        case TOKEN_REAL:
             printf("%f", token.value.r);
+            break;
+            
+        case TOKEN_DOT:
+            printf(".");
             break;
             
         default:
@@ -196,43 +170,46 @@ void printToken(Token token){
     }
 }
 
-/**
-    Reads a file (can be stdin) and reads each token individually and prints them
- @param fp   The file pointer for the file to be read and tokenized
- */
-void readFile(FILE *fp){
-    for (;;) {
-        Token token = readToken(fp);
-        if (token.type == END) {
+const char *tokenName(enum TokenType type){
+    switch (type) {
+        case TOKEN_END:
+            return "END";
             break;
-        }
-        if (token.type == INVALID){
-            printToken(token);
-        } else {
-            printf("%d:\t", token.type);
-            printToken(token);
-            printf("\n");
-        }
+        
+        case TOKEN_INVALID:
+            return "INVALID";
+            break;
+            
+        case TOKEN_SYMBOL:
+            return "SYMBOL";
+            break;
+            
+        case TOKEN_INT:
+            return "INT";
+            break;
+            
+        case TOKEN_OPENP:
+            return "OPEN P";
+            break;
+            
+        case TOKEN_CLOSEP:
+            return "CLOSE P";
+            break;
+            
+        case TOKEN_QUOTE:
+            return "QUOTE";
+            break;
+            
+        case TOKEN_REAL:
+            return "REAL";
+            break;
+            
+        case TOKEN_DOT:
+            return "DOT";
+            break;
+            
+        default:
+            return "INVALID";
+            break;
     }
-}
-
-int main(int argc, char **argv){
-    hashInit();
-    if (argc == 1){     // If one arg, tokenize stdin
-        readFile(stdin);
-    } else {            // If more than one arg, args past calling arg will be files to tokenize
-        for (int i = 1; i < argc; i++){
-            FILE *fp = fopen(argv[i], "r");
-            if (fp == NULL) {
-                fprintf(stderr, "%s: can't open fp: %s\n", argv[0], argv[1]);
-                exit(1);
-            }
-            printf("Tokens in File: %s\n", argv[i]);
-            readFile(fp);
-            printf("\n");
-            fclose(fp);
-        }
-    }
-    
-    return 0;
 }
