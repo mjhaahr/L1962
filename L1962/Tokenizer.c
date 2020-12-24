@@ -143,7 +143,8 @@ Token readToken(FILE *fp) {
     return token;
 }
 
-void unreadToken(void){ //uh, not complete
+void unreadToken(Token token){ //uh, not complete
+    unread = token;
     unreadPresent = 1;
 }
 

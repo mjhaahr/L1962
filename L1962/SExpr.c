@@ -108,34 +108,6 @@ const char *SExprName(SExprType type){
     }
 }
 
-SExpr tokenToSExpr(Token token){
-    SExpr expr;
-    switch (token.type) {
-        case TOKEN_SYMBOL:
-            expr = symbolToSExpr(token.value.s);
-            break;
-            
-        case TOKEN_INT:
-            expr = intToSExpr(token.value.i);
-            break;
-            
-        case TOKEN_REAL:
-            expr = realToSExpr(token.value.r);
-            break;
-            
-        case TOKEN_OPENP:
-                
-            // Aaah
-            expr.type = INVALID;
-            break;
-        
-        default: // add cons handling, also add whitespace handling, should not print NIL there
-            expr.type = INVALID;
-            break;
-    }
-    return expr;
-}
-
 MaybeSExpr readSExpr(FILE *fp){
     Token token = readToken(fp);
     MaybeSExpr expr;
@@ -164,14 +136,13 @@ MaybeSExpr readSExpr(FILE *fp){
             break;
             
         case TOKEN_OPENP:
-        {
             expr.eof = 0;
             expr.error = NULL;
-            Token first = readToken(fp); // First term or close parens
-            if(first.type == TOKEN_CLOSEP){ // Auto Nil;
+            token = readToken(fp); // First term or close parens
+            if(token.type == TOKEN_CLOSEP){ // Auto Nil;
                 expr.sexpr.type = NIL;
             } else {
-                unreadToken();
+                unreadToken(token);
                 MaybeSExpr car = readSExpr(fp);
                 Token dot = readToken(fp); // First term or close parens
                 if (dot.type != TOKEN_DOT){
@@ -189,7 +160,7 @@ MaybeSExpr readSExpr(FILE *fp){
                 }
             }
             break;
-        }
+            
         default:
             expr.eof = 0;
             expr.sexpr.type = INVALID;

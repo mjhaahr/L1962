@@ -98,13 +98,6 @@ void printSExpr(SExpr expr);
 const char *SExprName(SExprType type);
 
 /**
-    Makes an SExpr (general handing from token)
- @param token The token to conver
- @return The new SExpr
- */
-SExpr tokenToSExpr(Token token);
-
-/**
     Reads an SExpr and only one SExpr
  @param fp   The file pointer for the file to be read and parsed
  @return The next SExpr in the file as a SExpr struct

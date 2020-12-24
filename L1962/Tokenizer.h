@@ -63,9 +63,10 @@ Token readToken(FILE *fp);
 
 /**
     Unreads a token and only one token
+ @param token The token to unread
  */
 
-void unreadToken(void);
+void unreadToken(Token token);
 
 
 /**
