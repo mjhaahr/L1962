@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3427B833259409A500E9E492 /* SExpr.c in Sources */ = {isa = PBXBuildFile; fileRef = 3427B832259409A500E9E492 /* SExpr.c */; };
 		3448C9D2258ADD6D0020FF2E /* Tokenizer.c in Sources */ = {isa = PBXBuildFile; fileRef = 3448C9D1258ADD6D0020FF2E /* Tokenizer.c */; };
 		344D8FB5258E58E900633FE8 /* struniq.c in Sources */ = {isa = PBXBuildFile; fileRef = 344D8FB4258E58E900633FE8 /* struniq.c */; };
 		344D8FB9258EB29700633FE8 /* hashSet.c in Sources */ = {isa = PBXBuildFile; fileRef = 344D8FB8258EB29700633FE8 /* hashSet.c */; };
@@ -27,6 +28,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		3427B831259409A500E9E492 /* SExpr.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SExpr.h; sourceTree = "<group>"; };
+		3427B832259409A500E9E492 /* SExpr.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SExpr.c; sourceTree = "<group>"; };
 		3448C9C6258ADD4E0020FF2E /* L1962 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = L1962; sourceTree = BUILT_PRODUCTS_DIR; };
 		3448C9D1258ADD6D0020FF2E /* Tokenizer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Tokenizer.c; sourceTree = "<group>"; };
 		344D8FB3258E58E900633FE8 /* struniq.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = struniq.h; sourceTree = "<group>"; };
@@ -70,6 +73,8 @@
 			isa = PBXGroup;
 			children = (
 				3448C9D1258ADD6D0020FF2E /* Tokenizer.c */,
+				3427B831259409A500E9E492 /* SExpr.h */,
+				3427B832259409A500E9E492 /* SExpr.c */,
 				34CE01142592887E0098F7F9 /* main.c */,
 				34CE01132592883C0098F7F9 /* Tokenizer.h */,
 				344D8FB3258E58E900633FE8 /* struniq.h */,
@@ -138,6 +143,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3427B833259409A500E9E492 /* SExpr.c in Sources */,
 				34CE01152592887E0098F7F9 /* main.c in Sources */,
 				344D8FB5258E58E900633FE8 /* struniq.c in Sources */,
 				3448C9D2258ADD6D0020FF2E /* Tokenizer.c in Sources */,

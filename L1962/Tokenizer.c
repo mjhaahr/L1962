@@ -7,6 +7,9 @@
 //
 #include "Tokenizer.h"
 
+static Token unread;
+static int unreadPresent = 0;
+
 /**
     Checks if a character is part of the allowed character set for the beginning of a symbol token
  @param c   The character to check if it is in the set for a valid symbol token (leading symbol)
@@ -34,6 +37,12 @@ int isSymbolContinue(int c){
 }
 
 Token readToken(FILE *fp) {
+    
+    if (unreadPresent){ //if unread has been called, reset flag and print the unread value
+        unreadPresent = 0;
+        return unread;
+    }
+    
     Token token;
     int c = getc(fp);      // Gets next char in fp
     if (c == EOF) {         // Early return if EF
@@ -44,7 +53,7 @@ Token readToken(FILE *fp) {
     int index = 0;
     char buf[BUFSIZ];       // Compiler allocates in a smart way, reallocates it at same location
     
-    enum TokenType id;      // Matching ID for the given char
+    TokenType id;      // Matching ID for the given char
     
     if (isSymbol(c)) {
         id = TOKEN_SYMBOL;
@@ -70,14 +79,17 @@ Token readToken(FILE *fp) {
     } else if (c == '(') {
         index++;
         token.type = TOKEN_OPENP;
+        unread = token;
         return token;
     } else if (c == ')') {
         index++;
         token.type = TOKEN_CLOSEP;
+        unread = token;
         return token;
     } else if (c == '\'') {
         index++;
         token.type = TOKEN_QUOTE;
+        unread = token;
         return token;
     } else if (c == '.') {
         c = getc(fp); // For get next
@@ -110,6 +122,9 @@ Token readToken(FILE *fp) {
             ungetc(c, fp);      // Roll position in fp back to allow proper reading
             token.value.e = 0;
         }
+        while (token.type == TOKEN_INVALID){
+            token = readToken(fp);
+        }
         return token;
     }
     
@@ -124,7 +139,12 @@ Token readToken(FILE *fp) {
     } else {                    // else (TOKEN_SYMBOL), write the buffer (via strdup)
         token.value.s = struniq(buf);
     }
+    unread = token;
     return token;
+}
+
+void unreadToken(void){ //uh, not complete
+    unreadPresent = 1;
 }
 
 void printToken(Token token){
@@ -170,7 +190,7 @@ void printToken(Token token){
     }
 }
 
-const char *tokenName(enum TokenType type){
+const char *tokenName(TokenType type){
     switch (type) {
         case TOKEN_END:
             return "END";

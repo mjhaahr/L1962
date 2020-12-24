@@ -20,7 +20,7 @@
 /**
  An Enum for Tokens
  */
-enum TokenType {
+typedef enum TokenType {
     TOKEN_END = -1,        // End of a Token
     TOKEN_INVALID = 0,
     TOKEN_SYMBOL = 1,      // [A-Za-z+*/%!?&^|<>][A-Za-z0-9+\-*/%!?&^|<>]*
@@ -30,7 +30,7 @@ enum TokenType {
     TOKEN_QUOTE = 5,       // '
     TOKEN_REAL = 6,        // -?[0-9]*.[0-9]*
     TOKEN_DOT = 7,         // . with not sign or digit on either side
-};
+} TokenType;
 
 
 /**
@@ -48,7 +48,7 @@ typedef union {
     A Token Struct
  */
 typedef struct {
-    enum TokenType type;    // Token type
+    TokenType type;    // Token type
     TokenValue value;       // Token Value
 } Token;
 
@@ -60,6 +60,12 @@ typedef struct {
  */
 
 Token readToken(FILE *fp);
+
+/**
+    Unreads a token and only one token
+ */
+
+void unreadToken(void);
 
 
 /**
@@ -74,7 +80,7 @@ void printToken(Token token);
  @param type  The TokenType to process
  @return  The TokenType as a string
  */
-const char *tokenName(enum TokenType type);
+const char *tokenName(TokenType type);
 
 
 #endif /* Tokenizer_h */

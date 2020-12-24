@@ -7,7 +7,7 @@
 
 #include <stdio.h>
 
-#include "Tokenizer.h"
+#include "SExpr.h"
 
 
 /**
@@ -16,17 +16,22 @@
  */
 void readFile(FILE *fp){
     for (;;) {
-        Token token = readToken(fp);
-        if (token.type == TOKEN_END) {
+        MaybeSExpr expr = readSExpr(fp);
+        if (expr.eof){
             break;
-        }
-        if (token.type == TOKEN_INVALID){
-            printToken(token);
+        } else if (expr.error == NULL){
+            printSExpr(expr.sexpr);
         } else {
-            printf("%s:\t", tokenName(token.type));
-            printToken(token);
-            printf("\n");
+            fprintf(stderr, "Error: \t%s\n", expr.error);
+            exit(1);
         }
+        
+        /*
+        if (sexpr.type == END) {
+            break;
+        } else {
+            printSExpr(sexpr);
+        }*/
     }
 }
 
