@@ -243,6 +243,12 @@ MaybeSExpr readSExpr(FILE *fp) {
             }
             break;
             
+        case TOKEN_QUOTE:
+            expr.eof = 0;
+            expr.error = NULL;
+            expr.sexpr = consToSExpr(symbolToSExpr("quote"), consToSExpr(readSExpr(fp).sexpr, makeNIL()));
+            break;
+            
         default:
             expr.eof = 0;
             expr.sexpr.type = INVALID;
