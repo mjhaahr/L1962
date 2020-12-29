@@ -85,6 +85,12 @@ SExpr realToSExpr(double value);
 SExpr symbolToSExpr(const char* symbol);
 
 /**
+    Makes a NIL SExpr
+ @return The new SExpr
+ */
+SExpr makeNIL(void);
+
+/**
     Prints an SExpr as a heirarchy
  @param expr The SExpr to print
  */
