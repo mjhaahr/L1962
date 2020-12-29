@@ -165,93 +165,86 @@ const char *SExprName(SExprType type) {
 MaybeSExpr readSExpr(FILE *fp) {
     Token token = readToken(fp);
     MaybeSExpr expr;
+    expr.eof = 0;
+    expr.error = NULL;
     switch (token.type) {
         case TOKEN_END:
             expr.eof = 1;
-            expr.error = NULL;
             break;
             
         case TOKEN_SYMBOL:
             expr.sexpr = symbolToSExpr(token.value.s);
-            expr.eof = 0;
-            expr.error = NULL;
             break;
             
         case TOKEN_INT:
             expr.sexpr = intToSExpr(token.value.i);
-            expr.eof = 0;
-            expr.error = NULL;
             break;
             
         case TOKEN_REAL:
             expr.sexpr = realToSExpr(token.value.r);
-            expr.eof = 0;
-            expr.error = NULL;
             break;
             
         case TOKEN_OPENP:
-            expr.eof = 0;
-            expr.error = NULL;
             token = readToken(fp); // First term or close parens
             if(token.type == TOKEN_CLOSEP) { // Auto Nil;
                 expr.sexpr.type = NIL;
             } else {
-                if (token.type == TOKEN_OPENP || token.type == TOKEN_INT || token.type == TOKEN_REAL || token.type == TOKEN_SYMBOL) { // Valid CARs
-                    unreadToken(token);
-                    expr.sexpr = consToSExpr(readSExpr(fp).sexpr, makeNIL()); // First
-                    expr.sexpr.type = CONS;
-                    SExpr last = expr.sexpr;
-                    
-                    token = readToken(fp);
-                    while(token.type != TOKEN_CLOSEP){
-                        if (token.type == TOKEN_DOT) {
-                            token = readToken(fp);
-                            if (token.type == TOKEN_OPENP || token.type == TOKEN_INT || token.type == TOKEN_REAL || token.type == TOKEN_SYMBOL){
-                                unreadToken(token);
-                                last.cons->cdr = readSExpr(fp).sexpr;
-                                token = readToken(fp);
-                                if (token.type != TOKEN_CLOSEP){
-                                    expr.sexpr.type = INVALID;
-                                    char str[56];
-                                    sprintf(str, "Invalid Token of type: %s instead of CLOSE P", tokenName(token.type));
-                                    expr.error = strdup(str);
-                                    break;
-                                }
-                                unreadToken(token);
-                            } else {
-                                expr.sexpr.type = INVALID;
-                                char str[48];
-                                sprintf(str, "Invalid Token after DOT of type: %s", tokenName(token.type));
-                                expr.error = strdup(str);
-                                break;
-                            }
-                            
-                        } else {
-                            unreadToken(token);
-                            last.cons->cdr = consToSExpr(readSExpr(fp).sexpr, makeNIL());
-                            last = last.cons->cdr;
+                unreadToken(token);
+                MaybeSExpr car = readSExpr(fp);
+                if (car.error != NULL) {
+                    return car;
+                } else if (car.eof) {
+                    expr.error = "Early EOF";
+                    return expr;
+                }
+                expr.sexpr = consToSExpr(car.sexpr, makeNIL()); // First
+                expr.sexpr.type = CONS;
+                SExpr last = expr.sexpr;
+                
+                token = readToken(fp);
+                while(token.type != TOKEN_CLOSEP) {
+                    if (token.type == TOKEN_DOT) {
+                        MaybeSExpr cdr = readSExpr(fp);
+                        if (cdr.error != NULL) {
+                            return cdr;
+                        } else if (cdr.eof) {
+                            expr.error = "Early EOF";
+                            return expr;
                         }
+                        last.cons->cdr = cdr.sexpr;
                         token = readToken(fp);
+                        if (token.type != TOKEN_CLOSEP) {
+                            expr.sexpr.type = INVALID;
+                            char str[56];
+                            sprintf(str, "Invalid Token of type: %s instead of CLOSE P", tokenName(token.type));
+                            expr.error = strdup(str);
+                            break;
+                        }
+                        unreadToken(token);
+                        
+                    } else {
+                        unreadToken(token);
+                        car = readSExpr(fp);
+                        if (car.error != NULL) {
+                            return car;
+                        } else if (car.eof) {
+                            expr.error = "Early EOF";
+                            return expr;
+                        }
+                        last.cons->cdr = consToSExpr(car.sexpr, makeNIL());
+                        last = last.cons->cdr;
                     }
-                } else {
-                    expr.sexpr.type = INVALID;
-                    char str[48];
-                    sprintf(str, "Invalid Token in list of type: %s", tokenName(token.type));
-                    expr.error = strdup(str);
+                    token = readToken(fp);
                 }
                 
             }
             break;
             
         case TOKEN_QUOTE:
-            expr.eof = 0;
-            expr.error = NULL;
             expr.sexpr = consToSExpr(symbolToSExpr("quote"), consToSExpr(readSExpr(fp).sexpr, makeNIL()));
             break;
             
         default:
-            expr.eof = 0;
-            expr.sexpr.type = INVALID;
             expr.error = "Default Error, Not of Valid Type";
             break;
     }
