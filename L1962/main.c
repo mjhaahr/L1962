@@ -21,6 +21,7 @@ void readFile(FILE *fp){
             break;
         } else if (expr.error == NULL){
             printSExpr(expr.sexpr);
+            printf("\n");
         } else {
             fprintf(stderr, "Error: \t%s\n", expr.error);
             exit(1);

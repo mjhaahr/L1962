@@ -76,8 +76,56 @@ void printSExprDepth(SExpr expr, int depth){
     }
 }
 
-void printSExpr(SExpr expr){
+void debugSExpr(SExpr expr){
     printSExprDepth(expr, 1);
+}
+
+/**
+    Prints Cons SExpr (private)
+ @param expr The Cons SExpr to print
+ */
+void printCons(SExpr expr){
+    printf("(");
+    while (expr.type != NIL){
+        printSExpr(expr.cons->car);
+        if (expr.cons->cdr.type != NIL){
+            printf(" ");
+            if (expr.cons->cdr.type != CONS){
+                printf(". ");
+                printSExpr(expr.cons->cdr);
+                break;
+            }
+        }
+        expr = expr.cons->cdr;
+    }
+    printf(")");
+}
+
+void printSExpr(SExpr expr){
+    switch (expr.type) {
+        case NIL:
+            printf("");
+            break;
+        
+        case CONS:
+            printCons(expr);
+            break;
+        case SYMBOL:
+            printf("%s", expr.symbol);
+            break;
+            
+        case INT:
+            printf("%lld", expr.i);
+            break;
+            
+        case REAL:
+            printf("%f", expr.r);
+            break;
+            
+        default:
+            printf("");
+            break;
+    }
 }
 
 const char *SExprName(SExprType type){
@@ -142,22 +190,30 @@ MaybeSExpr readSExpr(FILE *fp){
             if(token.type == TOKEN_CLOSEP){ // Auto Nil;
                 expr.sexpr.type = NIL;
             } else {
-                unreadToken(token);
-                MaybeSExpr car = readSExpr(fp);
-                Token dot = readToken(fp); // First term or close parens
-                if (dot.type != TOKEN_DOT){
+                if (token.type == TOKEN_OPENP || token.type == TOKEN_INT || token.type == TOKEN_REAL || token.type == TOKEN_SYMBOL){ // Valid CARs
+                    unreadToken(token);
+                    MaybeSExpr car = readSExpr(fp);
+                    Token dot = readToken(fp);
+                    if (dot.type == TOKEN_DOT){
+                        MaybeSExpr cdr = readSExpr(fp);
+                        expr.sexpr = consToSExpr(car.sexpr, cdr.sexpr);
+                        expr.sexpr.type = CONS;
+                        if (readToken(fp).type != TOKEN_CLOSEP){
+                            expr.sexpr.type = INVALID;
+                            expr.error = "No Close Parens Error, missing closing parenthesis in Cons SExpr";
+                            break;
+                        }
+                    } else {
+                        exit(2);
+                    }
+                   
+                } else {
                     expr.sexpr.type = INVALID;
-                    expr.error = "No Dot Error, missing separating dot in middle of Cons SExpr";
-                    break;
+                    char str[48];
+                    sprintf(str, "Invalid Token in list of type: %s", tokenName(token.type));
+                    expr.error = strdup(str);
                 }
-                MaybeSExpr cdr = readSExpr(fp);
-                expr.sexpr = consToSExpr(car.sexpr, cdr.sexpr);
-                expr.sexpr.type = CONS;
-                if (readToken(fp).type != TOKEN_CLOSEP){
-                    expr.sexpr.type = INVALID;
-                    expr.error = "No Close Parens Error, missing closing parenthesis in Cons SExpr";
-                    break;
-                }
+                
             }
             break;
             

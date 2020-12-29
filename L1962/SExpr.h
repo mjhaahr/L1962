@@ -85,7 +85,13 @@ SExpr realToSExpr(double value);
 SExpr symbolToSExpr(const char* symbol);
 
 /**
-    Prints an SExpr
+    Prints an SExpr as a heirarchy
+ @param expr The SExpr to print
+ */
+void debugSExpr(SExpr expr);
+
+/**
+    Prints an SExpr in list form
  @param expr The SExpr to print
  */
 void printSExpr(SExpr expr);
