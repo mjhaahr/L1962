@@ -162,50 +162,48 @@ const char *SExprName(SExprType type) {
     }
 }
 
-MaybeSExpr readSExpr(FILE *fp) {
+SExpr readSExpr(FILE *fp) {
     Token token = readToken(fp);
-    MaybeSExpr expr;
-    expr.eof = 0;
-    expr.error = NULL;
+    SExpr expr;
     switch (token.type) {
         case TOKEN_END:
-            expr.eof = 1;
+            expr.type = END;
             break;
             
         case TOKEN_SYMBOL:
-            expr.sexpr = symbolToSExpr(token.value.s);
+            expr = symbolToSExpr(token.value.s);
             break;
             
         case TOKEN_INT:
-            expr.sexpr = intToSExpr(token.value.i);
+            expr = intToSExpr(token.value.i);
             break;
             
         case TOKEN_REAL:
-            expr.sexpr = realToSExpr(token.value.r);
+            expr = realToSExpr(token.value.r);
             break;
             
         case TOKEN_OPENP:
             token = readToken(fp); // First term or close parens
             if(token.type == TOKEN_CLOSEP) { // Auto Nil;
-                expr.sexpr.type = NIL;
+                expr.type = NIL;
             } else {
                 unreadToken(token);
-                MaybeSExpr car = readSExpr(fp);
-                if (car.eof) {
+                SExpr car = readSExpr(fp);
+                if (car.type == EOF) {
                     fail("Early EOF");
                 }
-                expr.sexpr = consToSExpr(car.sexpr, makeNIL()); // First
-                expr.sexpr.type = CONS;
-                SExpr last = expr.sexpr;
+                expr = consToSExpr(car, makeNIL()); // First
+                expr.type = CONS;
+                SExpr last = expr;
                 
                 token = readToken(fp);
                 while(token.type != TOKEN_CLOSEP) {
                     if (token.type == TOKEN_DOT) {
-                        MaybeSExpr cdr = readSExpr(fp);
-                        if (cdr.eof) {
+                        SExpr cdr = readSExpr(fp);
+                        if (cdr.type == EOF) {
                             fail("Early EOF");
                         }
-                        last.cons->cdr = cdr.sexpr;
+                        last.cons->cdr = cdr;
                         token = readToken(fp);
                         if (token.type != TOKEN_CLOSEP) {
                             char str[56];
@@ -217,10 +215,10 @@ MaybeSExpr readSExpr(FILE *fp) {
                     } else {
                         unreadToken(token);
                         car = readSExpr(fp);
-                        if (car.eof) {
+                        if (car.type == END) {
                             fail("Early EOF");
                         }
-                        last.cons->cdr = consToSExpr(car.sexpr, makeNIL());
+                        last.cons->cdr = consToSExpr(car, makeNIL());
                         last = last.cons->cdr;
                     }
                     token = readToken(fp);
@@ -233,7 +231,7 @@ MaybeSExpr readSExpr(FILE *fp) {
             SExpr quote;
             quote.type = SYMBOL;
             quote.symbol = sym_QUOTE;
-            expr.sexpr = consToSExpr(quote, consToSExpr(readSExpr(fp).sexpr, makeNIL()));
+            expr = consToSExpr(quote, consToSExpr(readSExpr(fp), makeNIL()));
             
             break;
             }

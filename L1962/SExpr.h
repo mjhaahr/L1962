@@ -27,6 +27,7 @@ typedef enum { // SExpression Types
     INT,
     REAL,
     INVALID,
+    END,
 } SExprType;
 
 typedef struct Cons Cons;
@@ -120,7 +121,7 @@ const char *SExprName(SExprType type);
  @param fp   The file pointer for the file to be read and parsed
  @return The next SExpr in the file as a SExpr struct
  */
-MaybeSExpr readSExpr(FILE *fp);
+SExpr readSExpr(FILE *fp);
 
 /**
     car Builtin - gets the first element of the cons

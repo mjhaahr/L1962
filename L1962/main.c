@@ -17,23 +17,13 @@
  */
 void readFile(FILE *fp){
     for (;;) {
-        MaybeSExpr expr = readSExpr(fp);
-        if (expr.eof){
+        SExpr expr = readSExpr(fp);
+        if (expr.type == END){
             break;
-        } else if (expr.sexpr.type != INVALID){
-            printSExpr(eval(expr.sexpr));
+        } else {
+            printSExpr(eval(expr));
             printf("\n");
-        } else {
-            fprintf(stderr, "Error: \t%s\n", expr.error);
-            exit(1);
         }
-        
-        /*
-        if (sexpr.type == END) {
-            break;
-        } else {
-            printSExpr(sexpr);
-        }*/
     }
 }
 
