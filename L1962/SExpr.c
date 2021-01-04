@@ -191,11 +191,8 @@ MaybeSExpr readSExpr(FILE *fp) {
             } else {
                 unreadToken(token);
                 MaybeSExpr car = readSExpr(fp);
-                if (car.error != NULL) {
-                    return car;
-                } else if (car.eof) {
-                    expr.error = "Early EOF";
-                    return expr;
+                if (car.eof) {
+                    fail("Early EOF");
                 }
                 expr.sexpr = consToSExpr(car.sexpr, makeNIL()); // First
                 expr.sexpr.type = CONS;
@@ -205,31 +202,23 @@ MaybeSExpr readSExpr(FILE *fp) {
                 while(token.type != TOKEN_CLOSEP) {
                     if (token.type == TOKEN_DOT) {
                         MaybeSExpr cdr = readSExpr(fp);
-                        if (cdr.error != NULL) {
-                            return cdr;
-                        } else if (cdr.eof) {
-                            expr.error = "Early EOF";
-                            return expr;
+                        if (cdr.eof) {
+                            fail("Early EOF");
                         }
                         last.cons->cdr = cdr.sexpr;
                         token = readToken(fp);
                         if (token.type != TOKEN_CLOSEP) {
-                            expr.sexpr.type = INVALID;
                             char str[56];
                             sprintf(str, "Invalid Token of type: %s instead of CLOSE P", tokenName(token.type));
-                            expr.error = strdup(str);
-                            break;
+                            fail("Early EOF");
                         }
                         unreadToken(token);
                         
                     } else {
                         unreadToken(token);
                         car = readSExpr(fp);
-                        if (car.error != NULL) {
-                            return car;
-                        } else if (car.eof) {
-                            expr.error = "Early EOF";
-                            return expr;
+                        if (car.eof) {
+                            fail("Early EOF");
                         }
                         last.cons->cdr = consToSExpr(car.sexpr, makeNIL());
                         last = last.cons->cdr;
@@ -240,13 +229,55 @@ MaybeSExpr readSExpr(FILE *fp) {
             }
             break;
             
-        case TOKEN_QUOTE:
-            expr.sexpr = consToSExpr(symbolToSExpr("quote"), consToSExpr(readSExpr(fp).sexpr, makeNIL()));
+        case TOKEN_QUOTE: {
+            SExpr quote;
+            quote.type = SYMBOL;
+            quote.symbol = sym_QUOTE;
+            expr.sexpr = consToSExpr(quote, consToSExpr(readSExpr(fp).sexpr, makeNIL()));
+            
             break;
+            }
             
         default:
-            expr.error = "Default Error, Not of Valid Type";
-            break;
+            fail("Default Error, Not of Valid Token Type");
     }
     return expr;
+}
+
+SExpr car(SExpr c) {
+    check(c.type == CONS);
+    return c.cons->car;
+}
+
+SExpr cdr(SExpr c) {
+    check(c.type == CONS);
+    return c.cons->cdr;
+}
+
+SExpr cadr(SExpr c) {
+    return car(cdr(c));
+}
+
+SExpr caar(SExpr c) {
+    return car(car(c));
+}
+
+SExpr cdar(SExpr c) {
+    return cdr(car(c));
+}
+
+SExpr cddr(SExpr c) {
+    return cdr(cdr(c));
+}
+
+const char *sym_QUOTE = NULL;
+const char *sym_CAR = NULL;
+const char *sym_CDR = NULL;
+const char *sym_CONS = NULL;
+
+void initSExpr(void){
+    sym_QUOTE = struniq("quote");
+    sym_CAR = struniq("car");
+    sym_CDR = struniq("cdr");
+    sym_CONS = struniq("cons");
 }

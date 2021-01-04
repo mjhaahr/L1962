@@ -7,11 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		34032D19259BE0B10073E73B /* eval.c in Sources */ = {isa = PBXBuildFile; fileRef = 34032D18259BE0B10073E73B /* eval.c */; };
 		3427B833259409A500E9E492 /* SExpr.c in Sources */ = {isa = PBXBuildFile; fileRef = 3427B832259409A500E9E492 /* SExpr.c */; };
 		3448C9D2258ADD6D0020FF2E /* Tokenizer.c in Sources */ = {isa = PBXBuildFile; fileRef = 3448C9D1258ADD6D0020FF2E /* Tokenizer.c */; };
 		344D8FB5258E58E900633FE8 /* struniq.c in Sources */ = {isa = PBXBuildFile; fileRef = 344D8FB4258E58E900633FE8 /* struniq.c */; };
 		344D8FB9258EB29700633FE8 /* hashSet.c in Sources */ = {isa = PBXBuildFile; fileRef = 344D8FB8258EB29700633FE8 /* hashSet.c */; };
 		344D8FBD258F2CB400633FE8 /* hash.c in Sources */ = {isa = PBXBuildFile; fileRef = 344D8FBC258F2CB400633FE8 /* hash.c */; };
+		34BA8D3725A39F6800831BE2 /* try.c in Sources */ = {isa = PBXBuildFile; fileRef = 34BA8D3525A39F6800831BE2 /* try.c */; };
 		34CE01152592887E0098F7F9 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 34CE01142592887E0098F7F9 /* main.c */; };
 /* End PBXBuildFile section */
 
@@ -28,6 +30,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		34032D17259BE0B10073E73B /* eval.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = eval.h; sourceTree = "<group>"; };
+		34032D18259BE0B10073E73B /* eval.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = eval.c; sourceTree = "<group>"; };
 		3427B831259409A500E9E492 /* SExpr.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SExpr.h; sourceTree = "<group>"; };
 		3427B832259409A500E9E492 /* SExpr.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SExpr.c; sourceTree = "<group>"; };
 		3448C9C6258ADD4E0020FF2E /* L1962 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = L1962; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -38,6 +42,8 @@
 		344D8FB8258EB29700633FE8 /* hashSet.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = hashSet.c; sourceTree = "<group>"; };
 		344D8FBB258F2CB400633FE8 /* hash.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hash.h; sourceTree = "<group>"; };
 		344D8FBC258F2CB400633FE8 /* hash.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = hash.c; sourceTree = "<group>"; };
+		34BA8D3525A39F6800831BE2 /* try.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = try.c; sourceTree = "<group>"; };
+		34BA8D3625A39F6800831BE2 /* try.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = try.h; sourceTree = "<group>"; };
 		34CE01132592883C0098F7F9 /* Tokenizer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Tokenizer.h; sourceTree = "<group>"; };
 		34CE01142592887E0098F7F9 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -76,9 +82,13 @@
 				3427B831259409A500E9E492 /* SExpr.h */,
 				3427B832259409A500E9E492 /* SExpr.c */,
 				34CE01142592887E0098F7F9 /* main.c */,
+				34032D17259BE0B10073E73B /* eval.h */,
+				34032D18259BE0B10073E73B /* eval.c */,
 				34CE01132592883C0098F7F9 /* Tokenizer.h */,
 				344D8FB3258E58E900633FE8 /* struniq.h */,
 				344D8FB4258E58E900633FE8 /* struniq.c */,
+				34BA8D3525A39F6800831BE2 /* try.c */,
+				34BA8D3625A39F6800831BE2 /* try.h */,
 				344D8FB7258EB29700633FE8 /* hashSet.h */,
 				344D8FB8258EB29700633FE8 /* hashSet.c */,
 				344D8FBB258F2CB400633FE8 /* hash.h */,
@@ -143,10 +153,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				34032D19259BE0B10073E73B /* eval.c in Sources */,
 				3427B833259409A500E9E492 /* SExpr.c in Sources */,
 				34CE01152592887E0098F7F9 /* main.c in Sources */,
 				344D8FB5258E58E900633FE8 /* struniq.c in Sources */,
 				3448C9D2258ADD6D0020FF2E /* Tokenizer.c in Sources */,
+				34BA8D3725A39F6800831BE2 /* try.c in Sources */,
 				344D8FB9258EB29700633FE8 /* hashSet.c in Sources */,
 				344D8FBD258F2CB400633FE8 /* hash.c in Sources */,
 			);

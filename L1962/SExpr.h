@@ -13,6 +13,12 @@
 #include <stdio.h>
 
 #include "Tokenizer.h"
+#include "try.h"
+
+extern const char *sym_QUOTE; // Quote symbol value
+extern const char *sym_CAR; // car symbol value
+extern const char *sym_CDR; // cdr symbol value
+extern const char *sym_CONS; // cons symbol value
 
 typedef enum { // SExpression Types
     NIL,    // Nothing
@@ -115,5 +121,52 @@ const char *SExprName(SExprType type);
  @return The next SExpr in the file as a SExpr struct
  */
 MaybeSExpr readSExpr(FILE *fp);
+
+/**
+    car Builtin - gets the first element of the cons
+ @param c The cons to get the car of
+ @return The car of the cons
+ */
+SExpr car(SExpr c);
+
+/**
+    cdr Builtin - gets the rest of the cons
+ @param c The cons to get the cdr of
+ @return The cdr of the cons
+ */
+SExpr cdr(SExpr c);
+
+/**
+    cadr Builtin - gets the first element of the rest of the cons
+ @param c The cons to get the cadr of
+ @return The cadr of the cons
+ */
+SExpr cadr(SExpr c);
+
+/**
+    caar Builtin - gets the first element of the first element of the cons
+ @param c The cons to get the caar of
+ @return The caar of the cons
+ */
+SExpr caar(SExpr c);
+
+/**
+    cdar Builtin - gets the rest of the first of the cons
+ @param c The cons to get the cdar of
+ @return The cdar of the cons
+ */
+SExpr cdar(SExpr c);
+
+/**
+    cddr Builtin - gets the rest of the rest of the cons
+ @param c The cons to get the cddr of
+ @return The cddr of the cons
+ */
+SExpr cddr(SExpr c);
+
+/**
+    SExpr Initializatiosn (for comparisons)
+ */
+void initSExpr(void);
 
 #endif /* SExpr_h */

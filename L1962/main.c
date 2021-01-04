@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 #include "SExpr.h"
+#include "eval.h"
 
 
 /**
@@ -19,8 +20,8 @@ void readFile(FILE *fp){
         MaybeSExpr expr = readSExpr(fp);
         if (expr.eof){
             break;
-        } else if (expr.error == NULL){
-            printSExpr(expr.sexpr);
+        } else if (expr.sexpr.type != INVALID){
+            printSExpr(eval(expr.sexpr));
             printf("\n");
         } else {
             fprintf(stderr, "Error: \t%s\n", expr.error);
@@ -38,19 +39,40 @@ void readFile(FILE *fp){
 
 int main(int argc, char **argv){
     hashInit();
+    initSExpr();
     if (argc == 1){     // If one arg, tokenize stdin
-        readFile(stdin);
+        TRY_CATCH(failure,
+            {
+                readFile(stdin);
+            }, {
+                fprintf(stderr, "failure on %s: %s\n", "stdin", failure.message);
+            });
     } else {            // If more than one arg, args past calling arg will be files to tokenize
         for (int i = 1; i < argc; i++){
-            FILE *fp = fopen(argv[i], "r");
-            if (fp == NULL) {
-                fprintf(stderr, "%s: can't open fp: %s\n", argv[0], argv[1]);
-                exit(1);
-            }
-            printf("Tokens in File: %s\n", argv[i]);
-            readFile(fp);
+            TRY_CATCH(failure,
+                {
+                    printf("%s: starting\n", argv[i]);
+                    FILE *fp = fopen(argv[i], "r");
+                    if (fp == NULL) {
+                        fail("can't open file");
+                    }
+                    TRY_FINALLY({
+                        TRY_CATCH(e,
+                            {
+                                readFile(fp);
+                            }, {
+                                printf("caught and throwing back: %s\n", e.message);
+                                RETHROW(e);
+                            });
+                        }, {
+                            fclose(fp);
+                            printf("cleaned up after %s\n", argv[i]);
+                        });
+                    printf("%s: finished successfully\n", argv[i]);
+                }, {
+                    fprintf(stderr, "failure on %s: %s\n", argv[i], failure.message);
+                });
             printf("\n");
-            fclose(fp);
         }
     }
     
