@@ -47,12 +47,6 @@ struct Cons{ // Lisp style list notation
     SExpr cdr;
 };
 
-typedef struct { // An struct for possible SExpr
-    int eof;
-    const char *error;
-    SExpr sexpr;
-} MaybeSExpr;
-
 
 /**
     Makes a Cons cell
