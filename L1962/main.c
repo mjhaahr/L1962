@@ -16,14 +16,20 @@
  @param fp   The file pointer for the file to be read and tokenized
  */
 void readFile(FILE *fp){
-    for (;;) {
-        SExpr expr = readSExpr(fp);
-        if (expr.type == END){
-            break;
-        } else {
-            printSExpr(eval(expr));
-            printf("\n");
-        }
+    int EOFBool = 1; // True while hasn't seen EOF
+    while (EOFBool) {
+        TRY_CATCH(e,
+            {
+                SExpr expr = readSExpr(fp);
+                if (expr.type == END){
+                    EOFBool = 0;
+                } else {
+                    printSExpr(eval(expr));
+                    printf("\n");
+                }
+            }, {
+                printf("caught during read: %s\n", e.message);
+            });
     }
 }
 
@@ -47,13 +53,7 @@ int main(int argc, char **argv){
                         fail("can't open file");
                     }
                     TRY_FINALLY({
-                        TRY_CATCH(e,
-                            {
-                                readFile(fp);
-                            }, {
-                                printf("caught and throwing back: %s\n", e.message);
-                                RETHROW(e);
-                            });
+                        readFile(fp);
                         }, {
                             fclose(fp);
                             printf("cleaned up after %s\n", argv[i]);
