@@ -8,8 +8,6 @@
 #ifndef struniq_h
 #define struniq_h
 
-#include <string.h>
-#include <stdio.h>
 #include "hashSet.h"
 
 /**

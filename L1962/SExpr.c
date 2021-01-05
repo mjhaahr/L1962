@@ -5,6 +5,9 @@
 //  Created by Matthew Haahr on 12/23/20.
 //
 
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "SExpr.h"
 
 Cons *makeCons(SExpr car, SExpr cdr) {
@@ -192,7 +195,7 @@ SExpr readSExpr(FILE *fp) {
                 if (car.type == EOF) {
                     fail("Early EOF");
                 }
-                expr = consToSExpr(car, makeNIL()); // First
+                expr = consToSExpr(car, sym_NIL); // First
                 expr.type = CONS;
                 SExpr last = expr;
                 
@@ -218,7 +221,7 @@ SExpr readSExpr(FILE *fp) {
                         if (car.type == END) {
                             fail("Early EOF");
                         }
-                        last.cons->cdr = consToSExpr(car, makeNIL());
+                        last.cons->cdr = consToSExpr(car, sym_NIL);
                         last = last.cons->cdr;
                     }
                     token = readToken(fp);
@@ -231,7 +234,7 @@ SExpr readSExpr(FILE *fp) {
             SExpr quote;
             quote.type = SYMBOL;
             quote.symbol = sym_QUOTE;
-            expr = consToSExpr(quote, consToSExpr(readSExpr(fp), makeNIL()));
+            expr = consToSExpr(quote, consToSExpr(readSExpr(fp), sym_NIL));
             
             break;
             }
@@ -272,10 +275,21 @@ const char *sym_QUOTE = NULL;
 const char *sym_CAR = NULL;
 const char *sym_CDR = NULL;
 const char *sym_CONS = NULL;
+const char *sym_ASSOC = NULL;
+const char *sym_ACONS = NULL;
+const char *sym_SETBang = NULL;
+const char *sym_SETCAR = NULL;
+const char *sym_SETCDR = NULL;
+SExpr sym_NIL = { NIL };
 
-void initSExpr(void){
+void initSExpr(void) {
     sym_QUOTE = struniq("quote");
     sym_CAR = struniq("car");
     sym_CDR = struniq("cdr");
     sym_CONS = struniq("cons");
+    sym_ASSOC = struniq("assoc");
+    sym_ACONS = struniq("acons");
+    sym_SETBang = struniq("set!");
+    sym_SETCAR = struniq("set-car!");
+    sym_SETCDR = struniq("set-cdr!");
 }

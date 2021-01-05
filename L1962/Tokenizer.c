@@ -136,7 +136,7 @@ Token readToken(FILE *fp) {
         token.value.i = atoi(buf);
     } else if (id == TOKEN_REAL){     // if REAL, atof()
         token.value.r = atof(buf);
-    } else {                    // else (TOKEN_SYMBOL), write the buffer (via strdup)
+    } else if (id == TOKEN_SYMBOL){                    // if SYMBOL, write the buffer (via struniq)
         token.value.s = struniq(buf);
     }
     unread = token;

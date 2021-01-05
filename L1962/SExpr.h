@@ -9,8 +9,6 @@
 #define SExpr_h
 
 #include <stdint.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 #include "Tokenizer.h"
 #include "try.h"
@@ -19,6 +17,11 @@ extern const char *sym_QUOTE; // Quote symbol value
 extern const char *sym_CAR; // car symbol value
 extern const char *sym_CDR; // cdr symbol value
 extern const char *sym_CONS; // cons symbol value
+extern const char *sym_ASSOC; // assoc symbol value
+extern const char *sym_ACONS; // acons symbol value
+extern const char *sym_SETBang; // set! symbol value
+extern const char *sym_SETCAR;
+extern const char *sym_SETCDR;
 
 typedef enum { // SExpression Types
     NIL,    // Nothing
@@ -46,6 +49,7 @@ struct Cons{ // Lisp style list notation
     SExpr car;
     SExpr cdr;
 };
+extern SExpr sym_NIL; // Const NIL value
 
 
 /**

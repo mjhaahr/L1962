@@ -14,7 +14,6 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <assert.h>
-
 #include "struniq.h"
 
 
