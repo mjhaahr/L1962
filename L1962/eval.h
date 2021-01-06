@@ -30,11 +30,17 @@ SExpr eval(SExpr sexpr);
 SExpr evalList(SExpr c);
 
 /**
+    Are the two SExprs equal
+ @return NILObj or TObj given the equality
+ */
+SExpr eq(SExpr a, SExpr b);
+
+/**
     Makes a dotted pair (cons) of a list with two elements
  @param args The list to make the cons from
  @return The new cons
  */
-SExpr ApplyCons(SExpr args);
+SExpr ApplyCONS(SExpr args);
 
 /**
     Wrapper for a car

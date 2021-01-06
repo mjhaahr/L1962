@@ -50,6 +50,35 @@ struct Cons{ // Lisp style list notation
     SExpr cdr;
 };
 extern const SExpr NILObj; // Const NIL value
+extern SExpr TObj;
+
+/**
+    Return true if type is NIL
+ */
+inline int isNIL(SExpr c) {
+    return c.type == NIL;
+}
+
+/**
+    Return true if type is CONS
+ */
+inline int isCONS(SExpr c) {
+    return c.type == CONS;
+}
+
+/**
+    Return true if type is SYMBOL
+ */
+inline int isSYMBOL(SExpr c) {
+    return c.type == SYMBOL;
+}
+
+/**
+    Return true if c is a list
+ */
+inline int isLIST(SExpr c) {
+    return isNIL(c) || isCONS(c);
+}
 
 
 /**
@@ -166,6 +195,6 @@ SExpr cddr(SExpr c);
 /**
     SExpr Initializatiosn (for comparisons)
  */
-void initSExpr(void);
+void SExprInit(void);
 
 #endif /* SExpr_h */

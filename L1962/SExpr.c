@@ -10,6 +10,17 @@
 
 #include "SExpr.h"
 
+/**
+    Duplication
+ */
+extern inline int isNIL(SExpr c);
+
+extern inline int isCONS(SExpr c);
+
+extern inline int isSYMBOL(SExpr c);
+
+extern inline int isLIST(SExpr c);
+
 Cons *makeCons(SExpr car, SExpr cdr) {
     Cons *cons = malloc(sizeof(Cons));
     cons->car = car;
@@ -281,8 +292,9 @@ const char *sym_SETBang = NULL;
 const char *sym_SETCAR = NULL;
 const char *sym_SETCDR = NULL;
 const SExpr NILObj  = { NIL };
+SExpr TObj  = { SYMBOL };
 
-void initSExpr(void) {
+void SExprInit(void) {
     sym_QUOTE = struniq("quote");
     sym_CAR = struniq("car");
     sym_CDR = struniq("cdr");
@@ -292,4 +304,5 @@ void initSExpr(void) {
     sym_SETBang = struniq("set!");
     sym_SETCAR = struniq("set-car!");
     sym_SETCDR = struniq("set-cdr!");
+    TObj.symbol = struniq("true");
 }

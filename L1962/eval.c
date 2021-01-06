@@ -11,8 +11,9 @@
 
 SExpr env = { NIL }; //The environment
 
-void evalInit(void){
+void evalInit(void) {
     ApplySETBang(symbolToSExpr(struniq("nil")), NILObj);
+    ApplySETBang(symbolToSExpr(struniq("true")), consToSExpr(symbolToSExpr(sym_QUOTE), consToSExpr(TObj, NILObj)));
 }
 
 SExpr eval(SExpr sexpr) {
@@ -29,10 +30,10 @@ SExpr eval(SExpr sexpr) {
         case NIL: // Self - Returning
             return sexpr;
             
-        case SYMBOL: // errors
+        case SYMBOL: // Variable Names
         {
             SExpr existing = ApplyASSOC(sexpr, env);
-            if (existing.type != NIL) {
+            if (!isNIL(existing)) {
                 return existing.cons->cdr;
             }
             char str[56];
@@ -40,38 +41,46 @@ SExpr eval(SExpr sexpr) {
             fail(str);
         }
             
-        case CONS: // errors
-            if (sexpr.cons->car.type != SYMBOL) {
+        case CONS: // Functions and things
+        {
+            if (!isSYMBOL(car(sexpr))) {
                 char str[72];
-                sprintf(str, "CAR of Eval List is not of Type SYMBOL instead of Type: %s", SExprName(sexpr.cons->car.type));
+                sprintf(str, "CAR of Eval List is not of Type SYMBOL instead of Type: %s", SExprName(car(sexpr).type));
                 fail(str);
-            } else if (sexpr.cons->car.symbol == sym_QUOTE) {
-                assert(sexpr.cons->cdr.cons->cdr.type == NIL);
+            }
+            
+            // Special Forms
+            const char *sym = car(sexpr).symbol;
+            if (sym == sym_QUOTE) {
+                assert(cddr(sexpr).type == NIL);
                 return cadr(sexpr);
-            } else if (sexpr.cons->car.symbol == sym_SETBang) {
+            } else if (sym == sym_SETBang) {
                 check(cadr(sexpr).type == SYMBOL);
                 return ApplySETBang(cadr(sexpr), car(cddr(sexpr)));
-            } else if (sexpr.cons->car.symbol == sym_SETCAR) {
-                return ApplySETCAR(cadr(sexpr), car(cddr(sexpr)));
-            } else if (sexpr.cons->car.symbol == sym_SETCDR) {
-                return ApplySETCDR(cadr(sexpr), car(cddr(sexpr)));
             }
+            
+            // Builtin Functions
             SExpr args = evalList(sexpr.cons->cdr);
-            if (sexpr.cons->car.symbol == sym_CAR) {
+            if (sym == sym_CAR) {
                 return ApplyCAR(args);
-            } else if (sexpr.cons->car.symbol == sym_CDR) {
+            } else if (sym == sym_CDR) {
                 return ApplyCDR(args);
-            } else if (sexpr.cons->car.symbol == sym_CONS) {
-                return ApplyCons(args);
-            } else if (sexpr.cons->car.symbol == sym_ASSOC) {
-                return ApplyASSOC(args.cons->car, cadr(args));
-            } else if (sexpr.cons->car.symbol == sym_ACONS) {
-                return (ApplyACONS(car(args), cadr(args), car(cddr(args))));
+            } else if (sym == sym_CONS) {
+                return ApplyCONS(args);
+            } else if (sym == sym_ASSOC) {
+                return ApplyASSOC(car(args), cadr(args));
+            } else if (sym == sym_ACONS) {
+                return ApplyACONS(car(args), cadr(args), car(cddr(args)));
+            } else if (sym == sym_SETCAR) {
+                return ApplySETCAR(car(args), cadr(args));
+            } else if (sym == sym_SETCDR) {
+                return ApplySETCDR(car(args), cadr(args));
             } else {
                 char str[72];
-                sprintf(str, "CAR of Eval List is of Type SYMBOL but no match in Builtin: %s", sexpr.cons->car.symbol);
+                sprintf(str, "CAR of Eval List is of Type SYMBOL but no match in Builtin: %s", sym);
                 fail(str);
             }
+        }
             
         default:
             fail("Default Error, Not of Valid SExpr Type");
@@ -82,74 +91,79 @@ SExpr evalList(SExpr c) {
     if (c.type == NIL) {
         return c;
     } else {
-        check(c.cons->cdr.type == CONS || c.cons->cdr.type == NIL);
-        return consToSExpr(eval(c.cons->car), evalList(c.cons->cdr));
+        check(isLIST(cdr(c)));
+        return consToSExpr(eval(car(c)), evalList(cdr(c)));
     }
 }
 
-SExpr ApplyCons(SExpr args) {
+SExpr eq(SExpr a, SExpr b) {
+    if(a.type == b.type) {
+        switch (a.type) {
+            case INT:
+                if (a.i == b.i) {
+                    return TObj;
+                }
+                break;
+                
+            case REAL:
+                if (a.r == b.r) {
+                    return TObj;
+                }
+                break;
+                
+            case SYMBOL:
+                if (a.symbol == b.symbol) {
+                    return TObj;
+                }
+                break;
+                
+            default:
+                break;
+        }
+    }
+    return NILObj;
+}
+
+SExpr ApplyCONS(SExpr args) {
     // check that args is a list of exactly two elements
-    check(cddr(args).type == NIL);
+    check(isNIL(cddr(args)));
     return consToSExpr(car(args), cadr(args));
 }
 
 SExpr ApplyCAR(SExpr args) {
     // check that args is a list of exactly one element
-    check(cdr(args).type == NIL);
+    check(isNIL(cdr(args)));
     return caar(args);
 }
 
 SExpr ApplyCDR(SExpr args) {
     // check that args is a list of exactly one element
-    check(cdr(args).type == NIL);
+    check(isNIL(cdr(args)));
     return cdar(args);
 }
 
 SExpr ApplyASSOC(SExpr key, SExpr a_list) {
     // find the first key-value pair in a_list with a key that matches key
-    for(SExpr list = a_list; list.type != NIL; list = (cdr(list))) {
+    for(SExpr list = a_list; !isNIL(list); list = cdr(list)) {
         check(car(list).type == CONS);
         SExpr SOI = car(list); // SExpr of Interest
-        SExpr sKey = car(SOI); // SOI's key
-        if(sKey.type == key.type) {
-            switch (sKey.type) {
-                case INT:
-                    if (sKey.i == key.i) {
-                        return SOI;
-                    }
-                    break;
-                    
-                case REAL:
-                    if (sKey.r == key.r) {
-                        return SOI;
-                    }
-                    break;
-                    
-                case SYMBOL:
-                    if (sKey.symbol == key.symbol) {
-                        return SOI;
-                    }
-                    break;
-                    
-                default:
-                    break;
-            }
+        if (!isNIL(eq(car(SOI), key))) {
+            return SOI;
         }
-        
     }
     return NILObj;
 }
 
 SExpr ApplyACONS(SExpr key, SExpr value, SExpr a_list) {
-    check(a_list.type == CONS || a_list.type == NIL); // NIL will occur once unless stuff is removed from the environment
+    check(isLIST(a_list)); // NIL will occur once unless stuff is removed from the environment
     return consToSExpr(consToSExpr(key, value), a_list);
 }
 
 SExpr ApplySETBang(SExpr name, SExpr value) {
-    check(name.type == SYMBOL);
+    check(isSYMBOL(name));
     check(name.symbol != NULL);
     SExpr existing = ApplyASSOC(name, env);
-    if (existing.type == NIL) {
+    if (isNIL(existing)) {
         env = ApplyACONS(name, eval(value), env);
     } else {
         existing.cons->cdr = eval(value);
@@ -158,11 +172,11 @@ SExpr ApplySETBang(SExpr name, SExpr value) {
 }
 
 SExpr ApplySETCAR(SExpr target, SExpr value) {
-    eval(target).cons->car = eval(value);
+    target.cons->car = value;
     return NILObj;
 }
 
-SExpr ApplySETCDR(SExpr target, SExpr value){
-    eval(target).cons->cdr = eval(value);
+SExpr ApplySETCDR(SExpr target, SExpr value) {
+    target.cons->cdr = value;
     return NILObj;
 }
