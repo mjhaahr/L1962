@@ -195,7 +195,7 @@ SExpr readSExpr(FILE *fp) {
                 if (car.type == EOF) {
                     fail("Early EOF");
                 }
-                expr = consToSExpr(car, sym_NIL); // First
+                expr = consToSExpr(car, NILObj); // First
                 expr.type = CONS;
                 SExpr last = expr;
                 
@@ -221,7 +221,7 @@ SExpr readSExpr(FILE *fp) {
                         if (car.type == END) {
                             fail("Early EOF");
                         }
-                        last.cons->cdr = consToSExpr(car, sym_NIL);
+                        last.cons->cdr = consToSExpr(car, NILObj);
                         last = last.cons->cdr;
                     }
                     token = readToken(fp);
@@ -234,7 +234,7 @@ SExpr readSExpr(FILE *fp) {
             SExpr quote;
             quote.type = SYMBOL;
             quote.symbol = sym_QUOTE;
-            expr = consToSExpr(quote, consToSExpr(readSExpr(fp), sym_NIL));
+            expr = consToSExpr(quote, consToSExpr(readSExpr(fp), NILObj));
             
             break;
             }
@@ -280,7 +280,7 @@ const char *sym_ACONS = NULL;
 const char *sym_SETBang = NULL;
 const char *sym_SETCAR = NULL;
 const char *sym_SETCDR = NULL;
-SExpr sym_NIL = { NIL };
+const SExpr NILObj  = { NIL };
 
 void initSExpr(void) {
     sym_QUOTE = struniq("quote");

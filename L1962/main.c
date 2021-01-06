@@ -36,6 +36,7 @@ void readFile(FILE *fp){
 int main(int argc, char **argv){
     hashInit();
     initSExpr();
+    evalInit();
     if (argc == 1){     // If one arg, tokenize stdin
         TRY_CATCH(failure,
             {

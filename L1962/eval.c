@@ -11,6 +11,10 @@
 
 SExpr env = { NIL }; //The environment
 
+void evalInit(void){
+    ApplySETBang(symbolToSExpr(struniq("nil")), NILObj);
+}
+
 SExpr eval(SExpr sexpr) {
     switch (sexpr.type) {
         case INVALID: // It's an error
@@ -46,11 +50,11 @@ SExpr eval(SExpr sexpr) {
                 return cadr(sexpr);
             } else if (sexpr.cons->car.symbol == sym_SETBang) {
                 check(cadr(sexpr).type == SYMBOL);
-                return ApplySETBang(cadr(sexpr), cddr(sexpr));
+                return ApplySETBang(cadr(sexpr), car(cddr(sexpr)));
             } else if (sexpr.cons->car.symbol == sym_SETCAR) {
-                return ApplySETCAR(cadr(sexpr), cddr(sexpr));
+                return ApplySETCAR(cadr(sexpr), car(cddr(sexpr)));
             } else if (sexpr.cons->car.symbol == sym_SETCDR) {
-                return ApplySETCDR(cadr(sexpr), cddr(sexpr));
+                return ApplySETCDR(cadr(sexpr), car(cddr(sexpr)));
             }
             SExpr args = evalList(sexpr.cons->cdr);
             if (sexpr.cons->car.symbol == sym_CAR) {
@@ -133,7 +137,7 @@ SExpr ApplyASSOC(SExpr key, SExpr a_list) {
         }
         
     }
-    return sym_NIL;
+    return NILObj;
 }
 
 SExpr ApplyACONS(SExpr key, SExpr value, SExpr a_list) {
@@ -146,19 +150,19 @@ SExpr ApplySETBang(SExpr name, SExpr value) {
     check(name.symbol != NULL);
     SExpr existing = ApplyASSOC(name, env);
     if (existing.type == NIL) {
-        env = ApplyACONS(name, eval(car(value)), env);
+        env = ApplyACONS(name, eval(value), env);
     } else {
-        existing.cons->cdr = eval(car(value));
+        existing.cons->cdr = eval(value);
     }
-    return sym_NIL;
+    return NILObj;
 }
 
 SExpr ApplySETCAR(SExpr target, SExpr value) {
-    eval(target).cons->car = eval(car(value));
-    return sym_NIL;
+    eval(target).cons->car = eval(value);
+    return NILObj;
 }
 
 SExpr ApplySETCDR(SExpr target, SExpr value){
-    eval(target).cons->cdr = eval(car(value));
-    return sym_NIL;
+    eval(target).cons->cdr = eval(value);
+    return NILObj;
 }

@@ -49,7 +49,7 @@ struct Cons{ // Lisp style list notation
     SExpr car;
     SExpr cdr;
 };
-extern SExpr sym_NIL; // Const NIL value
+extern const SExpr NILObj; // Const NIL value
 
 
 /**

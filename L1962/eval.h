@@ -11,6 +11,11 @@
 #include "SExpr.h"
 
 /**
+    Initializes the environment
+ */
+void evalInit(void);
+
+/**
     Evaluates the given SExpr as if it were Lisp code
  @param sexpr The SExpr to eval
  @return The results of the evaluation
