@@ -220,9 +220,7 @@ SExpr readSExpr(FILE *fp) {
                         last.cons->cdr = cdr;
                         token = readToken(fp);
                         if (token.type != TOKEN_CLOSEP) {
-                            char str[56];
-                            sprintf(str, "Invalid Token of type: %s instead of CLOSE P", tokenName(token.type));
-                            fail("Early EOF");
+                            fail("Invalid Token of type: %s instead of CLOSE P", tokenName(token.type));
                         }
                         unreadToken(token);
                         
@@ -291,6 +289,8 @@ const char *sym_ACONS = NULL;
 const char *sym_SETBang = NULL;
 const char *sym_SETCAR = NULL;
 const char *sym_SETCDR = NULL;
+const char *sym_env= NULL;
+
 const SExpr NILObj  = { NIL };
 SExpr TObj  = { SYMBOL };
 
@@ -304,5 +304,7 @@ void SExprInit(void) {
     sym_SETBang = struniq("set!");
     sym_SETCAR = struniq("set-car!");
     sym_SETCDR = struniq("set-cdr!");
+    sym_env = struniq("env");
+    
     TObj.symbol = struniq("true");
 }

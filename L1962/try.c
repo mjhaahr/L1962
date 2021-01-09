@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "try.h"
 
@@ -34,9 +35,14 @@ noreturn void failNoCopy(Failure failure) {
     failInternal();
 }
 
-noreturn void fail(const char *message) {
+noreturn void fail(const char *fmt, ...) {
     Failure failure;
-    failure.message = strdup(message);
+    va_list ap;
+    va_start(ap, fmt);
+    char buf[BUFSIZ];
+    vsnprintf(buf, BUFSIZ, fmt, ap);
+    va_end(ap);
+    failure.message = buf;
     failNoCopy(failure);
 }
 

@@ -20,8 +20,9 @@ extern const char *sym_CONS; // cons symbol value
 extern const char *sym_ASSOC; // assoc symbol value
 extern const char *sym_ACONS; // acons symbol value
 extern const char *sym_SETBang; // set! symbol value
-extern const char *sym_SETCAR;
-extern const char *sym_SETCDR;
+extern const char *sym_SETCAR; // set-car! symbol value
+extern const char *sym_SETCDR; // set-cdr! symbol value
+extern const char *sym_env; // env symbol value
 
 typedef enum { // SExpression Types
     NIL,    // Nothing

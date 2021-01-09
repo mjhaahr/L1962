@@ -13,7 +13,7 @@ SExpr env = { NIL }; //The environment
 
 void evalInit(void) {
     ApplySETBang(symbolToSExpr(struniq("nil")), NILObj);
-    ApplySETBang(symbolToSExpr(struniq("true")), consToSExpr(symbolToSExpr(sym_QUOTE), consToSExpr(TObj, NILObj)));
+    ApplySETBang(symbolToSExpr(struniq("true")), TObj);
 }
 
 SExpr eval(SExpr sexpr) {
@@ -36,17 +36,16 @@ SExpr eval(SExpr sexpr) {
             if (!isNIL(existing)) {
                 return existing.cons->cdr;
             }
-            char str[56];
-            sprintf(str, "No Matching Variable Found in Environmet: %s", sexpr.symbol);
-            fail(str);
+            fail("No Matching Variable Found in Environmet: %s", sexpr.symbol);
         }
+        
+        case END:
+            return NILObj;
             
         case CONS: // Functions and things
         {
             if (!isSYMBOL(car(sexpr))) {
-                char str[72];
-                sprintf(str, "CAR of Eval List is not of Type SYMBOL instead of Type: %s", SExprName(car(sexpr).type));
-                fail(str);
+                fail("CAR of Eval List is not of Type SYMBOL instead of Type: %s", SExprName(car(sexpr).type));
             }
             
             // Special Forms
@@ -56,7 +55,7 @@ SExpr eval(SExpr sexpr) {
                 return cadr(sexpr);
             } else if (sym == sym_SETBang) {
                 check(cadr(sexpr).type == SYMBOL);
-                return ApplySETBang(cadr(sexpr), car(cddr(sexpr)));
+                return ApplySETBang(cadr(sexpr), eval(car(cddr(sexpr))));
             }
             
             // Builtin Functions
@@ -75,10 +74,11 @@ SExpr eval(SExpr sexpr) {
                 return ApplySETCAR(car(args), cadr(args));
             } else if (sym == sym_SETCDR) {
                 return ApplySETCDR(car(args), cadr(args));
+            } else if (sym == sym_env) {
+                check(args.type == NIL);
+                return env;
             } else {
-                char str[72];
-                sprintf(str, "CAR of Eval List is of Type SYMBOL but no match in Builtin: %s", sym);
-                fail(str);
+                fail("CAR of Eval List is of Type SYMBOL but no match in Builtin: %s", sym);
             }
         }
             
@@ -164,9 +164,9 @@ SExpr ApplySETBang(SExpr name, SExpr value) {
     check(name.symbol != NULL);
     SExpr existing = ApplyASSOC(name, env);
     if (isNIL(existing)) {
-        env = ApplyACONS(name, eval(value), env);
+        env = ApplyACONS(name, value, env);
     } else {
-        existing.cons->cdr = eval(value);
+        existing.cons->cdr = value;
     }
     return NILObj;
 }

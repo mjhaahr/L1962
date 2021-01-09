@@ -5,7 +5,7 @@ By Matthew Haahr
 
 Can read, interpret, evaluate, and print from files as well as stdin.
 
-Has a full Lisp environment with variable support and prompting.
+Has a full Lisp environment with variable support and prompting based on when the user is using a console using isatty() and fileno() to detect when stdin is being read from.
 
 Implements try-catch and try-finally failure handling utilizing macros and setjmp.h.
 

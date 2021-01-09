@@ -53,9 +53,9 @@ noreturn void failNoCopy(Failure failure);
 /**
 	Creates a failure with the given message and strdups it
 	Calls failNoCopy
-@param message The message to copy
+@param fmt The message to copy (with sprintf style fill-ins)
 */
-noreturn void fail(const char *message);
+noreturn void fail(const char *fmt, ...);
 
 /*
 	Commence macro hell, for reference read the email
@@ -74,7 +74,7 @@ noreturn void fail(const char *message);
             Failure var = currentFailure; \
             currentFailure.message = NULL; \
             { catch; } \
-            free(var.message); \
+             \
         } \
     } while (0)
 

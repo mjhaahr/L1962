@@ -6,6 +6,7 @@
 //
 
 #include <stdio.h>
+#include <unistd.h>
 
 #include "SExpr.h"
 #include "eval.h"
@@ -16,16 +17,28 @@
  @param fp   The file pointer for the file to be read and tokenized
  */
 void readFile(FILE *fp){
+    int isInteractive = isatty(fileno(fp)); // Checks if the given file is a console (ineractive) to allow for prompting
     int EOFBool = 1; // True while hasn't seen EOF
+    int n = 1; // Environment saved variables
+    char str[5]; // Variable name string
+    
     while (EOFBool) {
+        if (isInteractive){
+            printf("> "); // Simple prompting, prints if console is being read
+        }
         TRY_CATCH(e,
             {
                 SExpr expr = readSExpr(fp);
                 if (expr.type == END){
                     EOFBool = 0;
                 } else {
-                    printSExpr(eval(expr));
+                    SExpr evaled = eval(expr);
+                    sprintf(str, "$%d", n);
+                    ApplySETBang(symbolToSExpr(struniq(str)), evaled);
+                    printf("%s = ", str);
+                    printSExpr(evaled);
                     printf("\n");
+                    n++;
                 }
             }, {
                 printf("caught during read: %s\n", e.message);
@@ -51,7 +64,7 @@ int main(int argc, char **argv){
                     printf("%s: starting\n", argv[i]);
                     FILE *fp = fopen(argv[i], "r");
                     if (fp == NULL) {
-                        fail("can't open file");
+                        fail("can't open file: %s", argv[i]);
                     }
                     TRY_FINALLY({
                         readFile(fp);
