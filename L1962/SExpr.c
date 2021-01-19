@@ -37,6 +37,20 @@ SExpr consToSExpr(SExpr car, SExpr cdr) {
     
 }
 
+Lambda *makeLambda(SExpr params, SExpr exprs) {
+    Lambda *lambda = malloc(sizeof(Lambda));
+    lambda->params = params;
+    lambda->exprs = exprs;
+    return lambda;
+}
+
+SExpr lambdaToSExpr(SExpr params, SExpr exprs) {
+    SExpr expr;
+    expr.type = LAMBDA;
+    expr.lambda = makeLambda(params, exprs);
+    return expr;
+}
+
 SExpr intToSExpr(int64_t value) {
     SExpr expr;
     expr.type = INT;
@@ -76,6 +90,14 @@ void printSExprDepth(SExpr expr, int depth) {
             printSExprDepth(expr.cons->car, depth + 1);
             printf("%*scdr: ", depth * 4, "");
             printSExprDepth(expr.cons->cdr, depth + 1);
+            break;
+        
+        case LAMBDA:
+            printf("Params:\t");
+            printSExpr(expr.lambda->params);
+            printf("\nExprs:\t");
+            printSExpr(expr.lambda->exprs);
+            printf("\n");
             break;
             
         case SYMBOL:
@@ -121,6 +143,17 @@ void printCons(SExpr expr) {
     printf(")");
 }
 
+/**
+ Prints lambda SExpr (private)
+ @param expr The lambda SExpr to print
+ */
+void printLambda(SExpr expr) {
+    printf("LAMBDA: Params: ");
+    printSExpr(expr.lambda->params);
+    printf("\tExprs: ");
+    printSExpr(expr.lambda->exprs);
+}
+
 void printSExpr(SExpr expr) {
     switch (expr.type) {
         case NIL:
@@ -130,6 +163,11 @@ void printSExpr(SExpr expr) {
         case CONS:
             printCons(expr);
             break;
+            
+        case LAMBDA:
+            printLambda(expr);
+            break;
+            
         case SYMBOL:
             printf("%s", expr.symbol);
             break;
@@ -156,6 +194,10 @@ const char *SExprName(SExprType type) {
             
         case CONS:
             return "CONS";
+            break;
+        
+        case LAMBDA:
+            return "LAMBDA";
             break;
             
         case SYMBOL:
@@ -290,6 +332,12 @@ const char *sym_SETBang = NULL;
 const char *sym_SETCAR = NULL;
 const char *sym_SETCDR = NULL;
 const char *sym_env= NULL;
+const char *sym_LAMBDA = NULL;
+const char *sym_PLUS = NULL;
+const char *sym_MINUS = NULL;
+const char *sym_MULT = NULL;
+const char *sym_DIV = NULL;
+const char *sym_LENGTH = NULL;
 
 const SExpr NILObj  = { NIL };
 SExpr TObj  = { SYMBOL };
@@ -305,6 +353,24 @@ void SExprInit(void) {
     sym_SETCAR = struniq("set-car!");
     sym_SETCDR = struniq("set-cdr!");
     sym_env = struniq("env");
+    sym_LAMBDA = struniq("lambda");
+    sym_PLUS = struniq("+");
+    sym_MINUS = struniq("-");
+    sym_MULT = struniq("*");
+    sym_DIV = struniq("/");
+    sym_LENGTH = struniq("length");
     
     TObj.symbol = struniq("true");
+}
+
+SExpr length(SExpr list){
+    check(isLIST(list));
+    SExpr len;
+    len.type = INT;
+    if (isNIL(list)){
+        len.i = 0;
+    } else {
+        len.i = length(cdr(list)).i + 1;
+    }
+    return len;
 }

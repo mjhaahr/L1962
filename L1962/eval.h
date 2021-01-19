@@ -11,23 +11,25 @@
 #include "SExpr.h"
 
 /**
-    Initializes the environment
+    Initializes the global environment (global)
  */
 void evalInit(void);
 
 /**
     Evaluates the given SExpr as if it were Lisp code
  @param sexpr The SExpr to eval
+ @param env The environment to eval to (for local variables), scope
  @return The results of the evaluation
  */
-SExpr eval(SExpr sexpr);
+SExpr eval(SExpr sexpr, SExpr env);
 
 /**
     Evaluates the list
  @param c The list to eval
+ @param env The environment to eval to (for local variables), scope
  @return The results of the evaluation
  */
-SExpr evalList(SExpr c);
+SExpr evalList(SExpr c, SExpr env);
 
 /**
     Are the two SExprs equal
@@ -76,10 +78,11 @@ SExpr ApplyACONS(SExpr key, SExpr value, SExpr a_list);
 /**
     Wrapper for set! (assigns variables in the environmet)
  @param name The name for the variable
- @param value The value to assign to the variable (to be evaluated)
+ @param value The value to assign to the variable, already evaluated
+ @param env  The local scope
  @return NIL for now
  */
-SExpr ApplySETBang(SExpr name, SExpr value);
+SExpr ApplySETBang(SExpr name, SExpr value, SExpr env);
 
 /**
     Wrapper for set!-car (RPLACA)
@@ -96,5 +99,43 @@ SExpr ApplySETCAR(SExpr target, SExpr value);
  @return NIL for now
  */
 SExpr ApplySETCDR(SExpr target, SExpr value);
+
+/**
+    Wrapper for +
+ @param args The list of items to add
+ @return The result as an SExpr
+ */
+SExpr ApplyPLUS(SExpr args);
+
+/**
+    Wrapper for -
+ @param args The list of items to subtract
+ @return The result as an SExpr
+ */
+SExpr ApplyMINUS(SExpr args);
+
+/**
+    Wrapper for *
+ @param args The list of items to multiply
+ @return The result as an SExpr
+ */
+SExpr ApplyMULT(SExpr args);
+
+/**
+    Wrapper for /
+ @param args The list of items to divide
+ @return The result as an SExpr
+ */
+SExpr ApplyDIV(SExpr args);
+
+/**
+    Wrapper for lambda
+ @param lambda  The lambda
+ @param args  List of arguments
+ @param env  The local scope
+ @return The result as an SExpr
+ */
+SExpr ApplyLAMBDA(Lambda lambda, SExpr args, SExpr env);
+
 
 #endif /* eval_h */

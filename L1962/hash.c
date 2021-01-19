@@ -8,10 +8,10 @@
 #include "hash.h" //Rem for testing
 
 
-unsigned long hashCode(const char *s){
+unsigned long hashCode(const char *s) {
     unsigned long hash = 0;
     int c;
-    while ((c = *s++)){
+    while ((c = *s++)) {
         hash = c + (hash << 6) + (hash << 16) - hash;
     }
     return hash;

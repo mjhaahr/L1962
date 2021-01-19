@@ -1,7 +1,9 @@
-L1962 - Lisp Interpreter in C
+## L1962 - Lisp Interpreter in C ##
 
 By Matthew Haahr
 
+
+Implements a Lisp-1 style environment.
 
 Can read, interpret, evaluate, and print from files as well as stdin.
 

@@ -11,13 +11,13 @@
 
 #include "struniq.h"
 
-const char *struniq(const char *s){
+const char *struniq(const char *s) {
     char buf[(strlen(s) + 1)];
-    for(int i = 0; s[i]; i++){
+    for(int i = 0; s[i]; i++) {
         buf[i] = tolower(s[i]);
     }
     const char *out = get(buf);
-    if (out == NULL){ // Not already seen (e.g. unique)
+    if (out == NULL) { // Not already seen (e.g. unique)
         out = add(strdup(buf));
         return out;
     } else { // In map // Seen alreay (pull from list)

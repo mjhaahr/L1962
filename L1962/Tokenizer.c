@@ -15,8 +15,8 @@ static int unreadPresent = 0;
  @param c   The character to check if it is in the set for a valid symbol token (leading symbol)
  @return True if in set, false if not
  */
-int isSymbol(int c){
-    if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) || (c == '+') || (c == '*') || (c == '/') || (c == '%') || (c == '!') || (c == '?') || (c == '&') || (c == '^') || (c == '|') || (c == '<') || (c == '>') || (c == '$')){
+int isSymbol(int c) {
+    if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) || (c == '+') || (c == '*') || (c == '/') || (c == '%') || (c == '!') || (c == '?') || (c == '&') || (c == '^') || (c == '|') || (c == '<') || (c == '>') || (c == '$')) {
         return 1;
     } else {
         return 0;
@@ -28,8 +28,8 @@ int isSymbol(int c){
  @param c   The character to check if it is in the set for a valid symbol token (non-leading symbol)
  @return True if in set, false if not
  */
-int isSymbolContinue(int c){
-    if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) || ((c >= '0') && (c <= '9')) || (c == '+') || (c == '\\') || (c == '-') || (c == '*') || (c == '/') || (c == '%') || (c == '!') || (c == '?') || (c == '&') || (c == '^') || (c == '|') || (c == '<') || (c == '>')){
+int isSymbolContinue(int c) {
+    if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) || ((c >= '0') && (c <= '9')) || (c == '+') || (c == '\\') || (c == '-') || (c == '*') || (c == '/') || (c == '%') || (c == '!') || (c == '?') || (c == '&') || (c == '^') || (c == '|') || (c == '<') || (c == '>')) {
         return 1;
     } else {
         return 0;
@@ -38,7 +38,7 @@ int isSymbolContinue(int c){
 
 Token readToken(FILE *fp) {
     
-    if (unreadPresent){ //if unread has been called, reset flag and print the unread value
+    if (unreadPresent) { //if unread has been called, reset flag and print the unread value
         unreadPresent = 0;
         return unread;
     }
@@ -55,6 +55,19 @@ Token readToken(FILE *fp) {
     
     TokenType id;      // Matching ID for the given char
     
+    if(c == '-') { // Special Minus sign case
+        buf[index++] = c;
+        buf[index] = 0;
+        id = TOKEN_SYMBOL;
+        c = getc(fp);
+        if (isspace(c) || c == ')' || c == '(') { // solo minus sign check
+            token.type = TOKEN_SYMBOL;
+            token.value.s = struniq(buf);
+            ungetc(c, fp);
+            return token;
+        }
+    }
+    
     if (isSymbol(c)) {
         id = TOKEN_SYMBOL;
         buf[index++] = c;
@@ -63,13 +76,17 @@ Token readToken(FILE *fp) {
         }
         ungetc(c, fp);      // Roll position in fp back to allow proper reading
         buf[index] = 0;     // End Token Value
-    } else if (((c >= '0') && (c <= '9')) || (c == '-')) {
+    } else if (((c >= '0') && (c <= '9')) || c == '.') {
         id = TOKEN_INT;
         buf[index++] = c;
         int decimal = 1;    // Decimal signifier
+        if (c == '.'){ // Leading with Decimal?
+            decimal = 0;
+            id = TOKEN_REAL;
+        }
         for (c = getc(fp); (((c >= '0') && (c <= '9')) || ((c == '.') && decimal)); c = getc(fp)) { // While is a number or is the first decimal point '.' seen, add to buffer  and increment index
             buf[index++] = c;
-            if (c == '.'){  // If decimal is seen (has to be first), change flag and change ID to real
+            if (c == '.') {  // If decimal is seen (has to be first), change flag and change ID to real
                 decimal = 0;
                 id = TOKEN_REAL;
             }
@@ -93,7 +110,7 @@ Token readToken(FILE *fp) {
         return token;
     } else if (c == '.') {
         c = getc(fp); // For get next
-        if (!((c >= '0') && (c <= '9'))){
+        if (!((c >= '0') && (c <= '9'))) {
             id = TOKEN_DOT;
             ungetc(c, fp);
             index++;
@@ -108,21 +125,20 @@ Token readToken(FILE *fp) {
             ungetc(c, fp);      // Roll position in fp back to allow proper reading
             buf[index] = 0;     // End Token Value
         }
-       
     } else {
         token.type = TOKEN_INVALID;
-        if (isspace(c)){    // Valid Token break (whitespace or ';')
+        if (isspace(c)) {    // Valid Token break (whitespace or ';')
             token.value.e = 0;
         } else {            // Invalid Token type (char not valid)
             token.value.e = c;
         }
         
-        if (c == ';'){
+        if (c == ';') {
             for (c = getc(fp);  (c != EOF && c != '\n'); c = getc(fp)); // If ';' then rest of line is comment, keep going until '\n' or EOF is seen
             ungetc(c, fp);      // Roll position in fp back to allow proper reading
             token.value.e = 0;
         }
-        while (token.type == TOKEN_INVALID){
+        while (token.type == TOKEN_INVALID) {
             token = readToken(fp);
         }
         return token;
@@ -132,27 +148,27 @@ Token readToken(FILE *fp) {
     
     
     token.type = id;
-    if (id == TOKEN_INT){             // if INT, atoi()
+    if (id == TOKEN_INT) {             // if INT, atoi()
         token.value.i = atoi(buf);
-    } else if (id == TOKEN_REAL){     // if REAL, atof()
+    } else if (id == TOKEN_REAL) {     // if REAL, atof()
         token.value.r = atof(buf);
-    } else if (id == TOKEN_SYMBOL){                    // if SYMBOL, write the buffer (via struniq)
+    } else if (id == TOKEN_SYMBOL) {                    // if SYMBOL, write the buffer (via struniq)
         token.value.s = struniq(buf);
     }
     unread = token;
     return token;
 }
 
-void unreadToken(Token token){
+void unreadToken(Token token) {
     assert(unreadPresent == 0);
     unread = token;
     unreadPresent = 1;
 }
 
-void printToken(Token token){
+void printToken(Token token) {
     switch (token.type) {
         case TOKEN_INVALID:
-            if (token.value.e != 0){
+            if (token.value.e != 0) {
                 printf("INVALID Token: %c\n", token.value.e);
             }
             break;
@@ -192,7 +208,7 @@ void printToken(Token token){
     }
 }
 
-const char *tokenName(TokenType type){
+const char *tokenName(TokenType type) {
     switch (type) {
         case TOKEN_END:
             return "END";

@@ -13,26 +13,26 @@ unsigned int stored = 0;
 // The hashed array
 const char **set; //initialized in init
 
-void hashInit(void){
+void hashInit(void) {
     set = malloc(size * sizeof(char*));
-    for (int i = 0; i < size; i++){
+    for (int i = 0; i < size; i++) {
         set[i] = NULL;
     }
 }
 
-void resize(void){
-    if (stored >= (size * 3 / 4)){ // Checks how full
+void resize(void) {
+    if (stored >= (size * 3 / 4)) { // Checks how full
         unsigned int oldSize = size;
         size = 2 * oldSize + 1;
         const char **oldSet = set;
         set = malloc(size * sizeof(char*));
         
-        for (int i = 0; i < size; i++){ // Refill
+        for (int i = 0; i < size; i++) { // Refill
             set[i] = NULL;
         }
         stored = 0;
-        for (int i = 0; i < oldSize; i++){ // Copy
-            if (oldSet[i] != NULL){
+        for (int i = 0; i < oldSize; i++) { // Copy
+            if (oldSet[i] != NULL) {
                 add(oldSet[i]);
             }
         }
@@ -41,14 +41,14 @@ void resize(void){
     }
 }
 
-unsigned int hashing(const char *s){
+unsigned int hashing(const char *s) {
     return (hashCode(s) % size);
 }
 
-const char *add(const char *s){
+const char *add(const char *s) {
     resize(); // Resize if needed
     unsigned int index = hashing(s);
-    while(set[index] != NULL){
+    while(set[index] != NULL) {
         index = (index + 1) % size;
     }
     set[index] = s;
@@ -56,11 +56,11 @@ const char *add(const char *s){
     return s;
 }
 
-const char *get(const char *s){
+const char *get(const char *s) {
     //printf("get(\"%s\")\thashing = %d\n", s, hashing(s));
     int index = hashing(s);
-    while(set[index] != NULL){
-        if (strcmp(s, set[index]) == 0){
+    while(set[index] != NULL) {
+        if (strcmp(s, set[index]) == 0) {
             return set[index];
         }
         index = (index + 1) % size;

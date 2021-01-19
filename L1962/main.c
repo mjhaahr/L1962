@@ -16,41 +16,41 @@
     Reads a file (can be stdin) and reads each token individually and prints them
  @param fp   The file pointer for the file to be read and tokenized
  */
-void readFile(FILE *fp){
+void readFile(FILE *fp) {
     int isInteractive = isatty(fileno(fp)); // Checks if the given file is a console (ineractive) to allow for prompting
     int EOFBool = 1; // True while hasn't seen EOF
     int n = 1; // Environment saved variables
     char str[5]; // Variable name string
     
     while (EOFBool) {
-        if (isInteractive){
+        if (isInteractive) {
             printf("> "); // Simple prompting, prints if console is being read
         }
         TRY_CATCH(e,
             {
                 SExpr expr = readSExpr(fp);
-                if (expr.type == END){
+                if (expr.type == END) {
                     EOFBool = 0;
                 } else {
-                    SExpr evaled = eval(expr);
+                    SExpr evaled = eval(expr, NILObj);
                     sprintf(str, "$%d", n);
-                    ApplySETBang(symbolToSExpr(struniq(str)), evaled);
+                    ApplySETBang(symbolToSExpr(struniq(str)), evaled, NILObj);
                     printf("%s = ", str);
                     printSExpr(evaled);
                     printf("\n");
                     n++;
                 }
             }, {
-                printf("caught during read: %s\n", e.message);
+                printf("caught: %s\n", e.message);
             });
     }
 }
 
-int main(int argc, char **argv){
+int main(int argc, char **argv) {
     hashInit();
     SExprInit();
     evalInit();
-    if (argc == 1){     // If one arg, tokenize stdin
+    if (argc == 1) {     // If one arg, tokenize stdin
         TRY_CATCH(failure,
             {
                 readFile(stdin);
@@ -58,7 +58,7 @@ int main(int argc, char **argv){
                 fprintf(stderr, "failure on %s: %s\n", "stdin", failure.message);
             });
     } else {            // If more than one arg, args past calling arg will be files to tokenize
-        for (int i = 1; i < argc; i++){
+        for (int i = 1; i < argc; i++) {
             TRY_CATCH(failure,
                 {
                     printf("%s: starting\n", argv[i]);

@@ -42,7 +42,7 @@ noreturn void fail(const char *fmt, ...) {
     char buf[BUFSIZ];
     vsnprintf(buf, BUFSIZ, fmt, ap);
     va_end(ap);
-    failure.message = buf;
+    failure.message = strdup(buf);
     failNoCopy(failure);
 }
 

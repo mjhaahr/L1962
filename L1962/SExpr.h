@@ -23,10 +23,17 @@ extern const char *sym_SETBang; // set! symbol value
 extern const char *sym_SETCAR; // set-car! symbol value
 extern const char *sym_SETCDR; // set-cdr! symbol value
 extern const char *sym_env; // env symbol value
+extern const char *sym_LAMBDA; // lambda symbol value
+extern const char *sym_PLUS; // + symbol value
+extern const char *sym_MINUS; // - symbol value
+extern const char *sym_MULT; // * symbol value
+extern const char *sym_DIV; // / symbol value
+extern const char *sym_LENGTH; // length symbol value
 
 typedef enum { // SExpression Types
     NIL,    // Nothing
     CONS,
+    LAMBDA,
     SYMBOL,
     INT,
     REAL,
@@ -36,10 +43,13 @@ typedef enum { // SExpression Types
 
 typedef struct Cons Cons;
 
+typedef struct Lambda Lambda;
+
 typedef struct { // SExpression Struct
     SExprType type;
     union {
         Cons *cons;
+        Lambda *lambda;
         int64_t i;
         double r;
         const char *symbol;
@@ -50,6 +60,12 @@ struct Cons{ // Lisp style list notation
     SExpr car;
     SExpr cdr;
 };
+
+struct Lambda{ // Lisp style list notation
+    SExpr params;
+    SExpr exprs;
+};
+
 extern const SExpr NILObj; // Const NIL value
 extern SExpr TObj;
 
@@ -97,6 +113,22 @@ Cons *makeCons(SExpr car, SExpr cdr);
  @return The created cons SExpr
  */
 SExpr consToSExpr(SExpr car, SExpr cdr);
+
+/**
+    Makes a Lambda
+ @param params  Lambda parameters
+ @param exprs   Lambda expressions
+ @return The Lambda
+ */
+Lambda *makeLambda(SExpr params, SExpr exprs);
+
+/**
+    Makes a Lambda as an SExpr
+ @param params  Lambda parameters
+ @param exprs   Lambda expressions
+ @return The Lambda SExpr
+ */
+SExpr lambdaToSExpr(SExpr params, SExpr exprs);
 
 /**
     Makes an int an SExpr
@@ -197,5 +229,12 @@ SExpr cddr(SExpr c);
     SExpr Initializatiosn (for comparisons)
  */
 void SExprInit(void);
+
+/**
+    length Builtin - gets the length of the list (recursive call)
+ @param list The list to find the length of
+ @return The length as an SExpr
+ */
+SExpr length(SExpr list);
 
 #endif /* SExpr_h */
