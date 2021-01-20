@@ -12,8 +12,17 @@
 SExpr global = { NIL }; //The global environment
 
 void evalInit(void) {
-    global = ApplyACONS(symbolToSExpr(struniq("nil")), NILObj, global);
-    global = ApplyACONS(symbolToSExpr(struniq("true")), TObj, global);
+    global = ApplyACONS(makeSymbol("nil"), NILObj, global);
+    global = ApplyACONS(makeSymbol("true"), TObj, global);
+    
+    addBuiltin("car", ApplyCAR);
+    addBuiltin("cdr", ApplyCDR);
+    addBuiltin("cons", ApplyCONS);
+    
+    addBuiltin("+", ApplyPLUS);
+    addBuiltin("-", ApplyMINUS);
+    addBuiltin("*", ApplyMULT);
+    addBuiltin("/", ApplyDIV);
 }
 
 SExpr eval(SExpr sexpr, SExpr env) {
@@ -62,51 +71,39 @@ SExpr eval(SExpr sexpr, SExpr env) {
                 return ApplySETBang(cadr(sexpr), eval(car(cddr(sexpr)), env), env);
             } else if (sym == sym_LAMBDA) {
                 return lambdaToSExpr(cadr(sexpr), cddr(sexpr));
-            } else if (car(sexpr).type == LAMBDA) {
-                return ApplyLAMBDA(*car(sexpr).lambda, cdr(sexpr), env);
+            } else if (sym == sym_env) {
+                check(cdr(sexpr).type == NIL);
+                return global;
+            } else if (sym == sym_DEFINE || (sym == sym_DEFUN)){
+                ApplyDEFINE(cadr(sexpr), cddr(sexpr));
+                return NILObj;
             }
             
             // Evaluate all the arguments
             SExpr args = evalList(cdr(sexpr), env);
             
             // Builtin Functions
-            if (sym == sym_CAR) {
-                return ApplyCAR(args);
-            } else if (sym == sym_CDR) {
-                return ApplyCDR(args);
-            } else if (sym == sym_CONS) {
-                return ApplyCONS(args);
-            } else if (sym == sym_ASSOC) {
+            if (sym == sym_ASSOC) {
                 return ApplyASSOC(car(args), cadr(args));
             } else if (sym == sym_ACONS) {
                 return ApplyACONS(car(args), cadr(args), car(cddr(args)));
             } else if (sym == sym_SETCAR) {
-                return ApplySETCAR(car(args), cadr(args));
+                return ApplySETCAR(args);
             } else if (sym == sym_SETCDR) {
-                return ApplySETCDR(car(args), cadr(args));
-            } else if (sym == sym_env) {
-                check(args.type == NIL);
-                return global;
-            } else if (sym == sym_PLUS) {
-                return ApplyPLUS(args);
-            } else if (sym == sym_MINUS) {
-                return ApplyMINUS(args);
-            } else if (sym == sym_MULT) {
-                check(cdr(args).type == CONS); // Must be more than one element
-                return ApplyMULT(args);
-            } else if (sym == sym_DIV) {
-                check(cdr(args).type == CONS); // Must be more than one element
-                return ApplyDIV(args);
+                return ApplySETCDR(args);
             } else if (sym == sym_LENGTH) {
                 check(cdr(args).type == NIL); // Must be one element
                 return length(car(args));
             }
+            
             // Evaluate the functions
             
             SExpr first = eval(car(sexpr), env);
             
             if (first.type == LAMBDA) {
                 return ApplyLAMBDA(*first.lambda, args, env);
+            } else if (first.type == BUILTIN) {
+                return (first.builtin.apply)(args);
             }
             
             
@@ -158,6 +155,12 @@ SExpr eq(SExpr a, SExpr b) {
         }
     }
     return NILObj;
+}
+
+void addBuiltin(const char *name, SExpr (*apply)(SExpr args)){
+    // Something is being lost with the ApplyACONS and I'm confused
+    SExpr key = makeSymbol(name);
+    global = ApplyACONS(key, makeBuiltin(apply), global);
 }
 
 SExpr ApplyCONS(SExpr args) {
@@ -212,12 +215,16 @@ SExpr ApplySETBang(SExpr name, SExpr value, SExpr env) {
     return NILObj;
 }
 
-SExpr ApplySETCAR(SExpr target, SExpr value) {
+SExpr ApplySETCAR(SExpr args) {
+    SExpr target = car(args);
+    SExpr value = cadr(args);
     target.cons->car = value;
     return NILObj;
 }
 
-SExpr ApplySETCDR(SExpr target, SExpr value) {
+SExpr ApplySETCDR(SExpr args) {
+    SExpr target = car(args);
+    SExpr value = cadr(args);
     target.cons->cdr = value;
     return NILObj;
 }
@@ -371,4 +378,16 @@ SExpr ApplyLAMBDA(Lambda lambda, SExpr args, SExpr env) {
         result = eval(car(expr), env);
     }
     return result;
+}
+
+void ApplyDEFINE(SExpr id, SExpr expr){
+    if (isSYMBOL(id)){
+        ApplySETBang(id, expr, global);
+    } else if (isCONS(id)){
+        SExpr name = car(id);
+        SExpr params = cdr(id);
+        ApplySETBang(name, lambdaToSExpr(params, expr), global);
+    } else {
+        fail("Invalid define: id is not of type SYMBOL or type CONS");
+    }
 }

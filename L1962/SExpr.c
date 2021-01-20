@@ -72,6 +72,13 @@ SExpr symbolToSExpr(const char* symbol) {
     return expr;
 }
 
+SExpr makeSymbol(const char* symbol) {
+    SExpr expr;
+    expr.type = SYMBOL;
+    expr.symbol = struniq(symbol);
+    return expr;
+}
+
 SExpr makeNIL(void) {
     SExpr expr;
     expr.type = NIL;
@@ -154,6 +161,14 @@ void printLambda(SExpr expr) {
     printSExpr(expr.lambda->exprs);
 }
 
+/**
+ Prints builtin SExpr (private)
+ @param expr The builtin SExpr to print
+ */
+void printBuiltin(SExpr expr) {
+    printf("<builtin %p>", expr.builtin.apply);
+}
+
 void printSExpr(SExpr expr) {
     switch (expr.type) {
         case NIL:
@@ -166,6 +181,10 @@ void printSExpr(SExpr expr) {
             
         case LAMBDA:
             printLambda(expr);
+            break;
+            
+        case BUILTIN:
+            printBuiltin(expr);
             break;
             
         case SYMBOL:
@@ -323,9 +342,6 @@ SExpr cddr(SExpr c) {
 }
 
 const char *sym_QUOTE = NULL;
-const char *sym_CAR = NULL;
-const char *sym_CDR = NULL;
-const char *sym_CONS = NULL;
 const char *sym_ASSOC = NULL;
 const char *sym_ACONS = NULL;
 const char *sym_SETBang = NULL;
@@ -333,20 +349,16 @@ const char *sym_SETCAR = NULL;
 const char *sym_SETCDR = NULL;
 const char *sym_env= NULL;
 const char *sym_LAMBDA = NULL;
-const char *sym_PLUS = NULL;
-const char *sym_MINUS = NULL;
-const char *sym_MULT = NULL;
-const char *sym_DIV = NULL;
 const char *sym_LENGTH = NULL;
+const char *sym_DEFINE = NULL;
+const char *sym_DEFUN = NULL;
+const char *sym_IF = NULL;
 
 const SExpr NILObj  = { NIL };
 SExpr TObj  = { SYMBOL };
 
 void SExprInit(void) {
     sym_QUOTE = struniq("quote");
-    sym_CAR = struniq("car");
-    sym_CDR = struniq("cdr");
-    sym_CONS = struniq("cons");
     sym_ASSOC = struniq("assoc");
     sym_ACONS = struniq("acons");
     sym_SETBang = struniq("set!");
@@ -354,11 +366,10 @@ void SExprInit(void) {
     sym_SETCDR = struniq("set-cdr!");
     sym_env = struniq("env");
     sym_LAMBDA = struniq("lambda");
-    sym_PLUS = struniq("+");
-    sym_MINUS = struniq("-");
-    sym_MULT = struniq("*");
-    sym_DIV = struniq("/");
     sym_LENGTH = struniq("length");
+    sym_DEFINE = struniq("define");
+    sym_DEFUN = struniq("defun");
+    sym_IF = struniq("if");
     
     TObj.symbol = struniq("true");
 }
@@ -373,4 +384,11 @@ SExpr length(SExpr list){
         len.i = length(cdr(list)).i + 1;
     }
     return len;
+}
+
+SExpr makeBuiltin(SExpr (*apply)(SExpr args)){
+    SExpr expr;
+    expr.type = BUILTIN;
+    expr.builtin.apply = apply;
+    return expr;
 }

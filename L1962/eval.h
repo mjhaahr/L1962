@@ -38,6 +38,13 @@ SExpr evalList(SExpr c, SExpr env);
 SExpr eq(SExpr a, SExpr b);
 
 /**
+    Makes the builtin and attaches it to the environment
+ @param name The name of the builtin, resolves the need for sym_* for each builtin
+ @param apply The function to apply
+ */
+void addBuiltin(const char *name, SExpr (*apply)(SExpr args));
+
+/**
     Makes a dotted pair (cons) of a list with two elements
  @param args The list to make the cons from
  @return The new cons
@@ -86,19 +93,21 @@ SExpr ApplySETBang(SExpr name, SExpr value, SExpr env);
 
 /**
     Wrapper for set!-car (RPLACA)
- @param target The cons with the value to be replaced
- @param value The value to replaced with
+ @param args The arguments:
+    target: The cons with the value to be replaced
+    value: The value to replaced with
  @return NIL for now
  */
-SExpr ApplySETCAR(SExpr target, SExpr value);
+SExpr ApplySETCAR(SExpr args);
 
 /**
     Wrapper for set!-cdr (RPLACD)
- @param target The cons with the value to be replaced
- @param value The value to replaced with
+ @param args The arguments:
+    target: The cons with the value to be replaced
+    value: The value to replaced with
  @return NIL for now
  */
-SExpr ApplySETCDR(SExpr target, SExpr value);
+SExpr ApplySETCDR(SExpr args);
 
 /**
     Wrapper for +
@@ -136,6 +145,13 @@ SExpr ApplyDIV(SExpr args);
  @return The result as an SExpr
  */
 SExpr ApplyLAMBDA(Lambda lambda, SExpr args, SExpr env);
+
+/**
+    Wrapper for define (Scheme-sytle name, defun from Common Lisp)
+ @param id  Either variable or function name and parameters
+ @param expr The expression for the function
+ */
+void ApplyDEFINE(SExpr id, SExpr expr);
 
 
 #endif /* eval_h */

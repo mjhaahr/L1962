@@ -14,9 +14,6 @@
 #include "try.h"
 
 extern const char *sym_QUOTE; // Quote symbol value
-extern const char *sym_CAR; // car symbol value
-extern const char *sym_CDR; // cdr symbol value
-extern const char *sym_CONS; // cons symbol value
 extern const char *sym_ASSOC; // assoc symbol value
 extern const char *sym_ACONS; // acons symbol value
 extern const char *sym_SETBang; // set! symbol value
@@ -24,16 +21,16 @@ extern const char *sym_SETCAR; // set-car! symbol value
 extern const char *sym_SETCDR; // set-cdr! symbol value
 extern const char *sym_env; // env symbol value
 extern const char *sym_LAMBDA; // lambda symbol value
-extern const char *sym_PLUS; // + symbol value
-extern const char *sym_MINUS; // - symbol value
-extern const char *sym_MULT; // * symbol value
-extern const char *sym_DIV; // / symbol value
 extern const char *sym_LENGTH; // length symbol value
+extern const char *sym_DEFINE; // define symbol value
+extern const char *sym_DEFUN; // defun symbol value
+extern const char *sym_IF; // if symbol value
 
 typedef enum { // SExpression Types
     NIL,    // Nothing
     CONS,
     LAMBDA,
+    BUILTIN,
     SYMBOL,
     INT,
     REAL,
@@ -41,20 +38,29 @@ typedef enum { // SExpression Types
     END,
 } SExprType;
 
+typedef struct SExpr SExpr;
+
 typedef struct Cons Cons;
 
 typedef struct Lambda Lambda;
 
-typedef struct { // SExpression Struct
+typedef struct Builtin Builtin;
+
+struct Builtin {
+  SExpr (*apply)(SExpr args);
+};
+
+struct SExpr { // SExpression Struct
     SExprType type;
     union {
         Cons *cons;
         Lambda *lambda;
+        Builtin builtin;
         int64_t i;
         double r;
         const char *symbol;
     };
-} SExpr;
+};
 
 struct Cons{ // Lisp style list notation
     SExpr car;
@@ -65,6 +71,7 @@ struct Lambda{ // Lisp style list notation
     SExpr params;
     SExpr exprs;
 };
+
 
 extern const SExpr NILObj; // Const NIL value
 extern SExpr TObj;
@@ -152,6 +159,13 @@ SExpr realToSExpr(double value);
 SExpr symbolToSExpr(const char* symbol);
 
 /**
+    Makes a symbol an SExpr and struniq's it
+ @param symbol The symbol to convert to an SExpr
+ @return The new SExpr
+ */
+SExpr makeSymbol(const char* symbol);
+
+/**
     Makes a NIL SExpr
  @return The new SExpr
  */
@@ -236,5 +250,13 @@ void SExprInit(void);
  @return The length as an SExpr
  */
 SExpr length(SExpr list);
+
+/**
+    Makes a builtin SExpr
+ @param apply Function to apply as part of builtin
+ @return The builtin as an SExpr
+ */
+
+SExpr makeBuiltin(SExpr (*apply)(SExpr args));
 
 #endif /* SExpr_h */
