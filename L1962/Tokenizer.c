@@ -29,7 +29,7 @@ int isSymbol(int c) {
  @return True if in set, false if not
  */
 int isSymbolContinue(int c) {
-    if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) || ((c >= '0') && (c <= '9')) || (c == '+') || (c == '\\') || (c == '-') || (c == '*') || (c == '/') || (c == '%') || (c == '!') || (c == '?') || (c == '&') || (c == '^') || (c == '|') || (c == '<') || (c == '>')) {
+    if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) || ((c >= '0') && (c <= '9')) || (c == '+') || (c == '\\') || (c == '-') || (c == '*') || (c == '/') || (c == '%') || (c == '!') || (c == '?') || (c == '&') || (c == '^') || (c == '|') || (c == '<') || (c == '>') || (c == '=')) {
         return 1;
     } else {
         return 0;
@@ -76,14 +76,28 @@ Token readToken(FILE *fp) {
         }
         ungetc(c, fp);      // Roll position in fp back to allow proper reading
         buf[index] = 0;     // End Token Value
-    } else if (((c >= '0') && (c <= '9')) || c == '.') {
+    } else if (c == '.') {
+        buf[index++] = c;
+        c = getc(fp); // For get next
+        if (!((c >= '0') && (c <= '9'))) {
+            id = TOKEN_DOT;
+            ungetc(c, fp);
+            index++;
+            token.type = TOKEN_DOT;
+            return token;
+        } else {
+            id = TOKEN_REAL;
+            while ((c >= '0') && (c <= '9')) { // Real
+                buf[index++] = c;
+                c = getc(fp);
+            }
+            ungetc(c, fp);      // Roll position in fp back to allow proper reading
+            buf[index] = 0;     // End Token Value
+        }
+    } else if (((c >= '0') && (c <= '9'))) {
         id = TOKEN_INT;
         buf[index++] = c;
         int decimal = 1;    // Decimal signifier
-        if (c == '.'){ // Leading with Decimal?
-            decimal = 0;
-            id = TOKEN_REAL;
-        }
         for (c = getc(fp); (((c >= '0') && (c <= '9')) || ((c == '.') && decimal)); c = getc(fp)) { // While is a number or is the first decimal point '.' seen, add to buffer  and increment index
             buf[index++] = c;
             if (c == '.') {  // If decimal is seen (has to be first), change flag and change ID to real
@@ -108,23 +122,6 @@ Token readToken(FILE *fp) {
         token.type = TOKEN_QUOTE;
         unread = token;
         return token;
-    } else if (c == '.') {
-        c = getc(fp); // For get next
-        if (!((c >= '0') && (c <= '9'))) {
-            id = TOKEN_DOT;
-            ungetc(c, fp);
-            index++;
-            token.type = TOKEN_DOT;
-            return token;
-        } else {
-            id = TOKEN_REAL;
-            while ((c >= '0') && (c <= '9')) { // Real
-                buf[index++] = c;
-                c = getc(fp);
-            }
-            ungetc(c, fp);      // Roll position in fp back to allow proper reading
-            buf[index] = 0;     // End Token Value
-        }
     } else {
         token.type = TOKEN_INVALID;
         if (isspace(c)) {    // Valid Token break (whitespace or ';')

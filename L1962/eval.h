@@ -32,12 +32,6 @@ SExpr eval(SExpr sexpr, SExpr env);
 SExpr evalList(SExpr c, SExpr env);
 
 /**
-    Are the two SExprs equal
- @return NILObj or TObj given the equality
- */
-SExpr eq(SExpr a, SExpr b);
-
-/**
     Makes the builtin and attaches it to the environment
  @param name The name of the builtin, resolves the need for sym_* for each builtin
  @param apply The function to apply
@@ -67,20 +61,17 @@ SExpr ApplyCDR(SExpr args);
 
 /**
     Wrapper for assoc (return the first pair in a-list which has its car equal to key, or nil if no pair on the list matches key.)
- @param key The key to find in the a-list
- @param a_list The a-list to look in
+ @param args The arguments for assoc
  @return The first matching pair
  */
-SExpr ApplyASSOC(SExpr key, SExpr a_list);
+SExpr ApplyASSOC(SExpr args);
 
 /**
     Wrapper for acons (add to front of an a-list)
- @param key The key to add for the pair
- @param value The value to add for the pair
- @param a_list The list to add the pair to the front of
+ @param args The arguments to pass to acons
  @return The updated a-list
  */
-SExpr ApplyACONS(SExpr key, SExpr value, SExpr a_list);
+SExpr ApplyACONS(SExpr args);
 
 /**
     Wrapper for set! (assigns variables in the environmet)
@@ -153,5 +144,64 @@ SExpr ApplyLAMBDA(Lambda lambda, SExpr args, SExpr env);
  */
 void ApplyDEFINE(SExpr id, SExpr expr);
 
+/**
+    Wrapper for length
+ @param args The length of the list, must be one element
+ @return The result as an SExpr
+ */
+SExpr ApplyLENGTH(SExpr args);
+
+/**
+    Wrapper for equal
+ @param args The equality evaluation, must be two elements, based on lisp equal
+ @return The result as an SExpr
+ */
+SExpr ApplyEQ(SExpr args);
+
+
+/**
+    Wrapper for env
+ @param args The arguments, needs to be NIL
+ @return The result of env
+ */
+SExpr ApplyENV(SExpr args);
+
+/**
+    If implementation
+ @param condition The condition
+ @param ifTrue Eval if true
+ @param ifFalse Eval if false
+ @param env The environemnt to eval to
+ @return The result of the eval
+ */
+SExpr ApplyIF(SExpr condition, SExpr ifTrue, SExpr ifFalse, SExpr env);
+
+/**
+    > wrapper
+ @param args The arguments
+ @return The result as an SExpr
+ */
+SExpr ApplyGREATER(SExpr args);
+
+/**
+    >= wrapper
+ @param args The arguments
+ @return The result as an SExpr
+ */
+SExpr ApplyGREATEREQ(SExpr args);
+
+/**
+    < wrapper
+ @param args The arguments
+ @return The result as an SExpr
+ */
+SExpr ApplyLESS(SExpr args);
+
+/**
+    <= wrapper
+ @param args The arguments
+ @return The result as an SExpr
+ */
+SExpr ApplyLESSEQ(SExpr args);
 
 #endif /* eval_h */

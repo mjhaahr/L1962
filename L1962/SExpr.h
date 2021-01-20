@@ -14,14 +14,8 @@
 #include "try.h"
 
 extern const char *sym_QUOTE; // Quote symbol value
-extern const char *sym_ASSOC; // assoc symbol value
-extern const char *sym_ACONS; // acons symbol value
 extern const char *sym_SETBang; // set! symbol value
-extern const char *sym_SETCAR; // set-car! symbol value
-extern const char *sym_SETCDR; // set-cdr! symbol value
-extern const char *sym_env; // env symbol value
 extern const char *sym_LAMBDA; // lambda symbol value
-extern const char *sym_LENGTH; // length symbol value
 extern const char *sym_DEFINE; // define symbol value
 extern const char *sym_DEFUN; // defun symbol value
 extern const char *sym_IF; // if symbol value
@@ -104,6 +98,24 @@ inline int isLIST(SExpr c) {
     return isNIL(c) || isCONS(c);
 }
 
+/**
+    SExpr Initializatiosn (for comparisons)
+ */
+void SExprInit(void);
+
+/**
+    Checks if an SExpr is equal to TObj
+ @param c The SExpr to check
+ @return 1 if equal to TObj, 0 if not
+ */
+int isTrue(SExpr c);
+
+/**
+    Are the two SExprs equal (equivalent lisp expression: equal)
+ @return NILObj or TObj given the equality
+ */
+SExpr eq(SExpr a, SExpr b);
+
 
 /**
     Makes a Cons cell
@@ -136,6 +148,14 @@ Lambda *makeLambda(SExpr params, SExpr exprs);
  @return The Lambda SExpr
  */
 SExpr lambdaToSExpr(SExpr params, SExpr exprs);
+
+/**
+    Makes a builtin SExpr
+ @param apply Function to apply as part of builtin
+ @return The builtin as an SExpr
+ */
+
+SExpr makeBuiltin(SExpr (*apply)(SExpr args));
 
 /**
     Makes an int an SExpr
@@ -240,11 +260,6 @@ SExpr cdar(SExpr c);
 SExpr cddr(SExpr c);
 
 /**
-    SExpr Initializatiosn (for comparisons)
- */
-void SExprInit(void);
-
-/**
     length Builtin - gets the length of the list (recursive call)
  @param list The list to find the length of
  @return The length as an SExpr
@@ -252,11 +267,94 @@ void SExprInit(void);
 SExpr length(SExpr list);
 
 /**
-    Makes a builtin SExpr
- @param apply Function to apply as part of builtin
- @return The builtin as an SExpr
+    setcar Builtin - sets the car of the CONS
+ @param target The target whose car to set
+ @param value The value to set the target's car to
  */
+void setcar(SExpr target, SExpr value);
 
-SExpr makeBuiltin(SExpr (*apply)(SExpr args));
+/**
+    setcar Builtin - sets the cdr of the CONS
+ @param target The target whose cdr to set
+ @param value The value to set the target's cdr to
+ */
+void setcdr(SExpr target, SExpr value);
+
+/**
+    assoc builtin (return the first pair in a-list which has its car equal to key, or nil if no pair on the list matches key.)
+ @param key The key to find in the a-list
+ @param a_list The a-list to look in
+ @return The first matching pair
+ */
+SExpr assoc(SExpr key, SExpr a_list);
+
+/**
+    acons builtin (add to front of an a-list)
+ @param key The key to add for the pair
+ @param value The value to add for the pair
+ @param a_list The list to add the pair to the front of
+ @return The updated a-list
+ */
+SExpr acons(SExpr key, SExpr value, SExpr a_list);
+
+/**
+    + builtin (add rest to first)
+ @param args The SExpr to build the addition sequence from
+ @return The answer as an SExpr for 0 terms: 0, for 1 term: itself, for 2+ terms: recursive addition (autoconvert to REAL if necessary)
+ */
+SExpr addSExpr(SExpr args);
+
+/**
+    - builtin (subract rest from first)
+ @param args The SExpr to build the subtraction sequence from
+ @return The answer as an SExpr for 0 terms: 0, for 1 term: negated itself, for 2+ terms: first minus sum of rest (recursive addition) (autoconvert to REAL if necessary)
+ */
+SExpr subtractSExpr(SExpr args);
+
+/**
+    * builtin (multiply first by rest)
+ @param args The SExpr to build the multiplication sequence from
+ @return The answer as an SExpr for 0 terms: 1, for 1 term: itself, for 2+ terms: recursive multiplication (autoconvert to REAL if necessary)
+ */
+SExpr multiplySExpr(SExpr args);
+
+/**
+    / builtin (divide first by rest)
+ @param args The SExpr to build the division sequence from
+ @return The answer as an SExpr for 0 terms: 1, for 1 term: itself, for 2+ terms: first divided by product of rest (recursive multiplication) (autoconvert to REAL if necessary)
+ */
+SExpr divideSExpr(SExpr args);
+
+/**
+    > builtin
+ @param a The first term
+ @param b  The second term
+ @return The answer as an SExpr
+ */
+SExpr greater(SExpr a, SExpr b);
+
+/**
+    >= builtin
+ @param a The first term
+ @param b  The second term
+ @return The answer as an SExpr
+ */
+SExpr greaterEQ(SExpr a, SExpr b);
+
+/**
+    <builtin
+ @param a The first term
+ @param b  The second term
+ @return The answer as an SExpr
+ */
+SExpr less(SExpr a, SExpr b);
+
+/**
+    <= builtin
+ @param a The first term
+ @param b  The second term
+ @return The answer as an SExpr
+ */
+SExpr lessEQ(SExpr a, SExpr b);
 
 #endif /* SExpr_h */
