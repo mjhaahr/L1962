@@ -454,12 +454,14 @@ SExpr length(SExpr list) {
     return len;
 }
 
-void setcar(SExpr target, SExpr value) {
+SExpr setcar(SExpr target, SExpr value) {
     target.cons->car = value;
+    return NILObj;
 }
 
-void setcdr(SExpr target, SExpr value) {
+SExpr setcdr(SExpr target, SExpr value) {
     target.cons->cdr = value;
+    return NILObj;
 }
 
 SExpr assoc(SExpr key, SExpr a_list) {
@@ -690,5 +692,13 @@ SExpr lessEQ(SExpr a, SExpr b) {
         return TObj;
     } else{
         return less(a, b);
+    }
+}
+
+SExpr not(SExpr arg){
+    if (isNIL(car(arg))) {
+        return TObj;
+    } else {
+        return NILObj;
     }
 }

@@ -274,15 +274,17 @@ SExpr length(SExpr list);
     setcar Builtin - sets the car of the CONS
  @param target The target whose car to set
  @param value The value to set the target's car to
+ @return Null
  */
-void setcar(SExpr target, SExpr value);
+SExpr setcar(SExpr target, SExpr value);
 
 /**
     setcar Builtin - sets the cdr of the CONS
  @param target The target whose cdr to set
  @param value The value to set the target's cdr to
+ @return Null
  */
-void setcdr(SExpr target, SExpr value);
+SExpr setcdr(SExpr target, SExpr value);
 
 /**
     assoc builtin (return the first pair in a-list which has its car equal to key, or nil if no pair on the list matches key.)
@@ -360,5 +362,12 @@ SExpr less(SExpr a, SExpr b);
  @return The answer as an SExpr
  */
 SExpr lessEQ(SExpr a, SExpr b);
+
+/**
+    not
+ @param arg The one argument to invert
+ @return the Result as an SExpr
+ */
+SExpr not(SExpr arg);
 
 #endif /* SExpr_h */

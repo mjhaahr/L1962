@@ -31,6 +31,7 @@ void readFile(FILE *fp) {
                 SExpr expr = readSExpr(fp);
                 if (expr.type == END) {
                     EOFBool = 0;
+                    printf("\n");
                 } else {
                     SExpr evaled = eval(expr, NILObj);
                     sprintf(str, "$%d", n);

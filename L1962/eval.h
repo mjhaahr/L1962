@@ -10,6 +10,27 @@
 
 #include "SExpr.h"
 
+#define DEFINE_WRAPPER_1(name) \
+    SExpr apply_ ## name(SExpr args) { \
+        check(isNIL(cdr(args))); \
+        return name(car(args)); \
+    }
+// check that args is a list of exactly one element
+
+#define DEFINE_WRAPPER_2(name) \
+    SExpr apply_ ## name(SExpr args) { \
+        check(isNIL(cddr(args))); \
+        return name(car(args), cadr(args)); \
+    }
+// check that args is a list of exactly two elements
+
+#define DEFINE_WRAPPER_3(name) \
+    SExpr apply_ ## name(SExpr args) { \
+        check(isNIL(cdr(cddr(args)))); \
+        return name(car(args), cadr(args), car(cddr(args))); \
+    }
+// check that args is a list of exactly three elements
+
 /**
     Initializes the global environment (global)
  */
@@ -39,41 +60,6 @@ SExpr evalList(SExpr c, SExpr env);
 void addBuiltin(const char *name, SExpr (*apply)(SExpr args));
 
 /**
-    Makes a dotted pair (cons) of a list with two elements
- @param args The list to make the cons from
- @return The new cons
- */
-SExpr ApplyCONS(SExpr args);
-
-/**
-    Wrapper for a car
- @param args The list take the car of
- @return The car
-*/
-SExpr ApplyCAR(SExpr args);
-
-/**
-    Wrapper for a cdr
- @param args The list take the cdr of
- @return The cdr
-*/
-SExpr ApplyCDR(SExpr args);
-
-/**
-    Wrapper for assoc (return the first pair in a-list which has its car equal to key, or nil if no pair on the list matches key.)
- @param args The arguments for assoc
- @return The first matching pair
- */
-SExpr ApplyASSOC(SExpr args);
-
-/**
-    Wrapper for acons (add to front of an a-list)
- @param args The arguments to pass to acons
- @return The updated a-list
- */
-SExpr ApplyACONS(SExpr args);
-
-/**
     set! special form eval (assigns variables in the environmet)
  @param name The name for the variable
  @param value The value to assign to the variable, already evaluated
@@ -81,52 +67,6 @@ SExpr ApplyACONS(SExpr args);
  @return NIL for now
  */
 SExpr evalSETBang(SExpr name, SExpr value, SExpr env);
-
-/**
-    Wrapper for set!-car (RPLACA)
- @param args The arguments:
-    target: The cons with the value to be replaced
-    value: The value to replaced with
- @return NIL for now
- */
-SExpr ApplySETCAR(SExpr args);
-
-/**
-    Wrapper for set!-cdr (RPLACD)
- @param args The arguments:
-    target: The cons with the value to be replaced
-    value: The value to replaced with
- @return NIL for now
- */
-SExpr ApplySETCDR(SExpr args);
-
-/**
-    Wrapper for +
- @param args The list of items to add
- @return The result as an SExpr
- */
-SExpr ApplyPLUS(SExpr args);
-
-/**
-    Wrapper for -
- @param args The list of items to subtract
- @return The result as an SExpr
- */
-SExpr ApplyMINUS(SExpr args);
-
-/**
-    Wrapper for *
- @param args The list of items to multiply
- @return The result as an SExpr
- */
-SExpr ApplyMULT(SExpr args);
-
-/**
-    Wrapper for /
- @param args The list of items to divide
- @return The result as an SExpr
- */
-SExpr ApplyDIV(SExpr args);
 
 /**
     lambda special form eval
@@ -163,26 +103,11 @@ SExpr evalDEFUN(SExpr name, SExpr params, SExpr expr);
 SExpr evalDEFVAR(SExpr name, SExpr expr);
 
 /**
-    Wrapper for length
- @param args The length of the list, must be one element
- @return The result as an SExpr
- */
-SExpr ApplyLENGTH(SExpr args);
-
-/**
-    Wrapper for equal
- @param args The equality evaluation, must be two elements, based on lisp equal
- @return The result as an SExpr
- */
-SExpr ApplyEQ(SExpr args);
-
-
-/**
     Wrapper for env
  @param args The arguments, needs to be NIL
  @return The result of env
  */
-SExpr ApplyENV(SExpr args);
+SExpr env(SExpr args);
 
 /**
     If special form eval
@@ -195,47 +120,12 @@ SExpr ApplyENV(SExpr args);
 SExpr evalIf(SExpr condition, SExpr ifTrue, SExpr ifFalse, SExpr env);
 
 /**
-    > wrapper
- @param args The arguments
- @return The result as an SExpr
- */
-SExpr ApplyGREATER(SExpr args);
-
-/**
-    >= wrapper
- @param args The arguments
- @return The result as an SExpr
- */
-SExpr ApplyGREATEREQ(SExpr args);
-
-/**
-    < wrapper
- @param args The arguments
- @return The result as an SExpr
- */
-SExpr ApplyLESS(SExpr args);
-
-/**
-    <= wrapper
- @param args The arguments
- @return The result as an SExpr
- */
-SExpr ApplyLESSEQ(SExpr args);
-
-/**
-    not wrapper
- @param arg The one argument to invert
- @return the Result as an SExpr
- */
-SExpr ApplyNOT(SExpr arg);
-
-/**
     and macro
  @param args The list of arguments to eval (must be two or more)
  @param env The environemnt to eval to
  @return True if all arguments are true
  */
-SExpr ApplyAND(SExpr args, SExpr env);
+SExpr evalAnd(SExpr args, SExpr env);
 
 /**
     or marco
@@ -243,7 +133,7 @@ SExpr ApplyAND(SExpr args, SExpr env);
  @param env The environemnt to eval to
  @return True if one argument is true
  */
-SExpr ApplyOR(SExpr args, SExpr env);
+SExpr evalOr(SExpr args, SExpr env);
 
 /**
     Evals let

@@ -9,35 +9,54 @@
 
 #include "eval.h"
 
+DEFINE_WRAPPER_1(car);
+DEFINE_WRAPPER_1(cdr);
+
+DEFINE_WRAPPER_1(length);
+DEFINE_WRAPPER_1(not);
+
+DEFINE_WRAPPER_2(consToSExpr);
+DEFINE_WRAPPER_2(assoc);
+DEFINE_WRAPPER_2(setcar);
+DEFINE_WRAPPER_2(setcdr);
+
+DEFINE_WRAPPER_2(eq);
+DEFINE_WRAPPER_2(greater);
+DEFINE_WRAPPER_2(greaterEQ);
+DEFINE_WRAPPER_2(less);
+DEFINE_WRAPPER_2(lessEQ);
+
+DEFINE_WRAPPER_3(acons);
+
 SExpr global = { NIL }; //The global environment
 
 void evalInit(void) {
     global = acons(makeSymbol("nil"), NILObj, global);
     global = acons(makeSymbol("true"), TObj, global);
     
-    addBuiltin("car", ApplyCAR);
-    addBuiltin("cdr", ApplyCDR);
-    addBuiltin("cons", ApplyCONS);
-    addBuiltin("set-car!", ApplySETCAR);
-    addBuiltin("set-cdr!", ApplySETCDR);
-    addBuiltin("assoc", ApplyASSOC);
-    addBuiltin("acons", ApplyACONS);
-    addBuiltin("env", ApplyENV);
+    addBuiltin("car", apply_car);
+    addBuiltin("cdr", apply_cdr);
+    addBuiltin("cons", apply_consToSExpr);
+    addBuiltin("set-car!", apply_setcar);
+    addBuiltin("set-cdr!", apply_setcdr);
+    addBuiltin("assoc", apply_assoc);
+    addBuiltin("acons", apply_acons);
+    addBuiltin("env", env);
     
-    addBuiltin("+", ApplyPLUS);
-    addBuiltin("-", ApplyMINUS);
-    addBuiltin("*", ApplyMULT);
-    addBuiltin("/", ApplyDIV);
-    addBuiltin("length", ApplyLENGTH);
-    addBuiltin("equal", ApplyEQ);
-    addBuiltin(">", ApplyGREATER);
-    addBuiltin(">=", ApplyGREATEREQ);
-    addBuiltin("<", ApplyLESS);
-    addBuiltin("<=", ApplyLESSEQ);
+    addBuiltin("+", addSExpr);
+    addBuiltin("-", subtractSExpr);
+    addBuiltin("*", multiplySExpr);
+    addBuiltin("/", divideSExpr);
+    addBuiltin("length", apply_length);
+    addBuiltin("equal", apply_eq);
+    addBuiltin(">", apply_greater);
+    addBuiltin(">=", apply_greaterEQ);
+    addBuiltin("<", apply_less);
+    addBuiltin("<=", apply_lessEQ);
     
-    addBuiltin("null", ApplyNOT);
-    addBuiltin("nil?", ApplyNOT);
-    addBuiltin("not", ApplyNOT);
+    addBuiltin("null", apply_not);
+    addBuiltin("nil?", apply_not);
+    addBuiltin("not", apply_not);
 }
 
 SExpr eval(SExpr sexpr, SExpr env) {
@@ -75,7 +94,7 @@ SExpr eval(SExpr sexpr, SExpr env) {
         }
             
         case CONS: // Functions and things
-        { // Need quote, set!, lambda, env, define, if, and, or
+        { // Need quote, set!, lambda, env, define, if, and, or (things that happen before the eval step)
             // Special Forms and Macros
             const char *sym = car(sexpr).symbol;
             if (sym == sym_QUOTE) {
@@ -102,10 +121,10 @@ SExpr eval(SExpr sexpr, SExpr env) {
                 }
             } else if (sym == sym_AND) {
                 check(!isNIL(cddr(sexpr)));       // Must be a two+ element list
-                return ApplyAND(cdr(sexpr), env);
+                return evalAnd(cdr(sexpr), env);
             } else if (sym == sym_OR) {
                 check(!isNIL(cddr(sexpr)));       // Must be a two+ element list
-                return ApplyOR(cdr(sexpr), env);
+                return evalOr(cdr(sexpr), env);
             }
             
             
@@ -150,38 +169,6 @@ void addBuiltin(const char *name, SExpr (*apply)(SExpr args)) {
     global = acons(key, makeBuiltin(apply), global);
 }
 
-SExpr ApplyCONS(SExpr args) {
-    // check that args is a list of exactly two elements
-    check(isNIL(cddr(args)));
-    return consToSExpr(car(args), cadr(args));
-}
-
-SExpr ApplyCAR(SExpr args) {
-    // check that args is a list of exactly one element
-    check(isNIL(cdr(args)));
-    return caar(args);
-}
-
-SExpr ApplyCDR(SExpr args) {
-    // check that args is a list of exactly one element
-    check(isNIL(cdr(args)));
-    return cdar(args);
-}
-
-SExpr ApplyASSOC(SExpr args) {
-    SExpr key = car(args);
-    SExpr a_list = cadr(args);
-    return assoc(key, a_list);
-}
-
-SExpr ApplyACONS(SExpr args) {
-    SExpr key = car(args);
-    SExpr value= cadr(args);
-    SExpr a_list = car(cddr(args));
-    
-    return acons(key, value, a_list);
-}
-
 SExpr evalSETBang(SExpr name, SExpr value, SExpr env) {
     check(isSYMBOL(name));
     check(name.symbol != NULL);
@@ -197,36 +184,6 @@ SExpr evalSETBang(SExpr name, SExpr value, SExpr env) {
         global = acons(name, value, global);
     }
     return name;
-}
-
-SExpr ApplySETCAR(SExpr args) {
-    SExpr target = car(args);
-    SExpr value = cadr(args);
-    setcar(target, value);
-    return NILObj;
-}
-
-SExpr ApplySETCDR(SExpr args) {
-    SExpr target = car(args);
-    SExpr value = cadr(args);
-    setcdr(target, value);
-    return NILObj;
-}
-
-SExpr ApplyPLUS(SExpr args) {
-    return addSExpr(args);
-}
-
-SExpr ApplyMINUS(SExpr args) {
-    return subtractSExpr(args);
-}
-
-SExpr ApplyMULT(SExpr args) {
-    return multiplySExpr(args);
-}
-
-SExpr ApplyDIV(SExpr args) {
-    return divideSExpr(args);
 }
 
 SExpr evalLambda(Lambda lambda, SExpr args, SExpr env) {
@@ -265,19 +222,7 @@ SExpr evalDEFVAR(SExpr name, SExpr expr) {
     }
 }
 
-SExpr ApplyLENGTH(SExpr args) {
-    check(isNIL(cdr(args))); // Must be one element
-    return length(car(args));
-}
-
-SExpr ApplyEQ(SExpr args) {
-    check(isNIL(cddr(args)));       // Must be a two element list
-    SExpr a = car(args);
-    SExpr b = cadr(args);
-    return eq(a, b);
-}
-
-SExpr ApplyENV(SExpr args) {
+SExpr env(SExpr args) {
     check(args.type == NIL);
     return global;
 }
@@ -291,44 +236,7 @@ SExpr evalIf(SExpr condition, SExpr ifTrue, SExpr ifFalse, SExpr env) {
     }
 }
 
-SExpr ApplyGREATER(SExpr args) {
-    check(isNIL(cddr(args)));       // Must be a two element list
-    SExpr a = car(args);
-    SExpr b = cadr(args);
-    return greater(a, b);
-}
-
-SExpr ApplyGREATEREQ(SExpr args) {
-    check(isNIL(cddr(args)));       // Must be a two element list
-    SExpr a = car(args);
-    SExpr b = cadr(args);
-    return greaterEQ(a, b);
-}
-
-SExpr ApplyLESS(SExpr args) {
-    check(isNIL(cddr(args)));       // Must be a two element list
-    SExpr a = car(args);
-    SExpr b = cadr(args);
-    return less(a, b);
-}
-
-SExpr ApplyLESSEQ(SExpr args) {
-    check(isNIL(cddr(args)));       // Must be a two element list
-    SExpr a = car(args);
-    SExpr b = cadr(args);
-    return lessEQ(a, b);
-}
-
-SExpr ApplyNOT(SExpr arg) {
-    check(isNIL(cdr(arg)));
-    if (isNIL(car(arg))) {
-        return TObj;
-    } else {
-        return NILObj;
-    }
-}
-
-SExpr ApplyAND(SExpr args, SExpr env) {
+SExpr evalAnd(SExpr args, SExpr env) {
     // does this have a required number of initial terms
     if (args.type == NIL) {
         return TObj;
@@ -336,18 +244,18 @@ SExpr ApplyAND(SExpr args, SExpr env) {
     if (isNIL(eval(car(args), env))) {
         return NILObj;
     } else {
-        return ApplyAND(cdr(args), env);
+        return evalAnd(cdr(args), env);
     }
     
 }
 
-SExpr ApplyOR(SExpr args, SExpr env) {
+SExpr evalOr(SExpr args, SExpr env) {
     // does this have a required number of initial terms
     if (args.type == NIL) {
         return NILObj;
     }
     if (isNIL(eval(car(args), env))) {
-        return ApplyOR(cdr(args), env);
+        return evalOr(cdr(args), env);
     } else {
         return TObj;
     }
@@ -363,5 +271,3 @@ SExpr evalLet(SExpr pairs, SExpr expr, SExpr env) {
     Lambda *lambda = makeLambda(params, expr);
     return evalLambda(*lambda, args, env);
 }
-
-//SExpr evalLambda(Lambda lambda, SExpr args, SExpr env)
