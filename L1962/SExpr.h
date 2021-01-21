@@ -18,7 +18,11 @@ extern const char *sym_SETBang; // set! symbol value
 extern const char *sym_LAMBDA; // lambda symbol value
 extern const char *sym_DEFINE; // define symbol value
 extern const char *sym_DEFUN; // defun symbol value
+extern const char *sym_DEFVAR; // defvar symbol value
 extern const char *sym_IF; // if symbol value
+extern const char *sym_AND; // and symbol value
+extern const char *sym_OR; // or symbol value
+extern const char *sym_LET; // let symbol value
 
 typedef enum { // SExpression Types
     NIL,    // Nothing

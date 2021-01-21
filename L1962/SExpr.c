@@ -29,7 +29,11 @@ const char *sym_SETBang = NULL;
 const char *sym_LAMBDA = NULL;
 const char *sym_DEFINE = NULL;
 const char *sym_DEFUN = NULL;
+const char *sym_DEFVAR = NULL;
 const char *sym_IF = NULL;
+const char *sym_AND = NULL;
+const char *sym_OR = NULL;
+const char *sym_LET = NULL;
 
 
 void SExprInit(void) {
@@ -38,13 +42,13 @@ void SExprInit(void) {
     sym_LAMBDA = struniq("lambda");
     sym_DEFINE = struniq("define");
     sym_DEFUN = struniq("defun");
+    sym_DEFVAR = struniq("defvar");
     sym_IF = struniq("if");
+    sym_AND = struniq("and");
+    sym_OR = struniq("or");
+    sym_LET = struniq("let");
     
     TObj.symbol = struniq("true");
-}
-
-int isTrue(SExpr c){
-    return c.type == SYMBOL && c.symbol == TObj.symbol;
 }
 
 SExpr eq(SExpr a, SExpr b) {
@@ -75,13 +79,13 @@ SExpr eq(SExpr a, SExpr b) {
             {
                 SExpr params = eq(a.lambda->params, b.lambda->params);
                 SExpr exprs = eq(a.lambda->exprs, b.lambda->exprs);
-                if (isTrue(params) && (isTrue(exprs))){
+                if (!isNIL(params) && (!isNIL(exprs))) {
                     return TObj;
                 }
             }
                 
             case BUILTIN:
-                if (a.builtin.apply == b.builtin.apply){
+                if (a.builtin.apply == b.builtin.apply) {
                     return TObj;
                 }
                 
@@ -90,7 +94,7 @@ SExpr eq(SExpr a, SExpr b) {
                 SExpr firstRes = eq(car(a), car(b));
                 SExpr restRes = eq(cdr(a), cdr(b));
                 
-                if (isTrue(firstRes) && (isTrue(restRes))){
+                if (!isNIL(firstRes) && (!isNIL(restRes))) {
                     return TObj;
                 }
             }
@@ -99,11 +103,11 @@ SExpr eq(SExpr a, SExpr b) {
                 break;
         }
     } else if (a.type == INT && b.type == REAL) {
-        if ((double) a.i == b.r){
+        if ((double) a.i == b.r) {
             return TObj;
         }
-    } else if (a.type == REAL && b.type == INT){
-        if (a.r == (double) b.i){
+    } else if (a.type == REAL && b.type == INT) {
+        if (a.r == (double) b.i) {
             return TObj;
         }
     }
@@ -140,7 +144,7 @@ SExpr lambdaToSExpr(SExpr params, SExpr exprs) {
     return expr;
 }
 
-SExpr makeBuiltin(SExpr (*apply)(SExpr args)){
+SExpr makeBuiltin(SExpr (*apply)(SExpr args)) {
     SExpr expr;
     expr.type = BUILTIN;
     expr.builtin.apply = apply;
@@ -438,11 +442,11 @@ SExpr cddr(SExpr c) {
 }
 
 
-SExpr length(SExpr list){
+SExpr length(SExpr list) {
     check(isLIST(list));
     SExpr len;
     len.type = INT;
-    if (isNIL(list)){
+    if (isNIL(list)) {
         len.i = 0;
     } else {
         len.i = length(cdr(list)).i + 1;
@@ -613,7 +617,7 @@ SExpr divideSExpr(SExpr args) {
     return result;
 }
 
-SExpr greater(SExpr a, SExpr b){
+SExpr greater(SExpr a, SExpr b) {
     if (a.type != INT && a.type != REAL) {
         fail("Addition of type: %s", SExprName(a.type));
     } else if (b.type != INT && b.type != REAL) {
@@ -621,21 +625,21 @@ SExpr greater(SExpr a, SExpr b){
     }
     if (b.type == REAL) {
         if (a.type == REAL) {
-            if (a.r > b.r){
+            if (a.r > b.r) {
                 return TObj;
             }
         } else {
-            if ((double) a.r > b.r){
+            if ((double) a.r > b.r) {
                 return TObj;
             }
         }
     } else {
         if (a.type == REAL) {
-            if (a.r > (double) b.r){
+            if (a.r > (double) b.r) {
                 return TObj;
             }
         } else {
-            if (a.i > b.i){
+            if (a.i > b.i) {
                 return TObj;
             }
         }
@@ -643,15 +647,15 @@ SExpr greater(SExpr a, SExpr b){
     return NILObj;
 }
 
-SExpr greaterEQ(SExpr a, SExpr b){
-    if (isTrue(eq(a, b))){
+SExpr greaterEQ(SExpr a, SExpr b) {
+    if (!isNIL(eq(a, b))) {
         return TObj;
     } else {
         return greater(a, b);
     }
 }
 
-SExpr less(SExpr a, SExpr b){
+SExpr less(SExpr a, SExpr b) {
     if (a.type != INT && a.type != REAL) {
         fail("Addition of type: %s", SExprName(a.type));
     } else if (b.type != INT && b.type != REAL) {
@@ -659,21 +663,21 @@ SExpr less(SExpr a, SExpr b){
     }
     if (b.type == REAL) {
         if (a.type == REAL) {
-            if (a.r < b.r){
+            if (a.r < b.r) {
                 return TObj;
             }
         } else {
-            if ((double) a.r < b.r){
+            if ((double) a.r < b.r) {
                 return TObj;
             }
         }
     } else {
         if (a.type == REAL) {
-            if (a.r < (double) b.r){
+            if (a.r < (double) b.r) {
                 return TObj;
             }
         } else {
-            if (a.i < b.i){
+            if (a.i < b.i) {
                 return TObj;
             }
         }
@@ -681,8 +685,8 @@ SExpr less(SExpr a, SExpr b){
     return NILObj;
 }
 
-SExpr lessEQ(SExpr a, SExpr b){
-    if (isTrue(eq(a, b))){
+SExpr lessEQ(SExpr a, SExpr b) {
+    if (!isNIL(eq(a, b))) {
         return TObj;
     } else{
         return less(a, b);

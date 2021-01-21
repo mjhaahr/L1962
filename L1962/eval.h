@@ -74,13 +74,13 @@ SExpr ApplyASSOC(SExpr args);
 SExpr ApplyACONS(SExpr args);
 
 /**
-    Wrapper for set! (assigns variables in the environmet)
+    set! special form eval (assigns variables in the environmet)
  @param name The name for the variable
  @param value The value to assign to the variable, already evaluated
  @param env  The local scope
  @return NIL for now
  */
-SExpr ApplySETBang(SExpr name, SExpr value, SExpr env);
+SExpr evalSETBang(SExpr name, SExpr value, SExpr env);
 
 /**
     Wrapper for set!-car (RPLACA)
@@ -129,20 +129,38 @@ SExpr ApplyMULT(SExpr args);
 SExpr ApplyDIV(SExpr args);
 
 /**
-    Wrapper for lambda
+    lambda special form eval
  @param lambda  The lambda
  @param args  List of arguments
  @param env  The local scope
  @return The result as an SExpr
  */
-SExpr ApplyLAMBDA(Lambda lambda, SExpr args, SExpr env);
+SExpr evalLambda(Lambda lambda, SExpr args, SExpr env);
 
 /**
-    Wrapper for define (Scheme-sytle name, defun from Common Lisp)
+    define special form eval (Scheme-sytle)
  @param id  Either variable or function name and parameters
- @param expr The expression for the function
+ @param expr The expression
+ @return The name of the variable/function
  */
-void ApplyDEFINE(SExpr id, SExpr expr);
+SExpr evalDefine(SExpr id, SExpr expr);
+
+/**
+    defun special form eval (Common Lisp-style, (define function))
+ @param name  Variable name
+ @param params List of parameters
+ @param expr The expression for the function
+ @return The name of the function
+ */
+SExpr evalDEFUN(SExpr name, SExpr params, SExpr expr);
+
+/**
+    defcar special form eval (Common Lisp-style, (define varaivle))
+ @param name  Variable name
+ @param expr The expression for the varaible
+ @return The name of the variable
+ */
+SExpr evalDEFVAR(SExpr name, SExpr expr);
 
 /**
     Wrapper for length
@@ -167,14 +185,14 @@ SExpr ApplyEQ(SExpr args);
 SExpr ApplyENV(SExpr args);
 
 /**
-    If implementation
+    If special form eval
  @param condition The condition
  @param ifTrue Eval if true
  @param ifFalse Eval if false
  @param env The environemnt to eval to
  @return The result of the eval
  */
-SExpr ApplyIF(SExpr condition, SExpr ifTrue, SExpr ifFalse, SExpr env);
+SExpr evalIf(SExpr condition, SExpr ifTrue, SExpr ifFalse, SExpr env);
 
 /**
     > wrapper
@@ -203,5 +221,37 @@ SExpr ApplyLESS(SExpr args);
  @return The result as an SExpr
  */
 SExpr ApplyLESSEQ(SExpr args);
+
+/**
+    not wrapper
+ @param arg The one argument to invert
+ @return the Result as an SExpr
+ */
+SExpr ApplyNOT(SExpr arg);
+
+/**
+    and macro
+ @param args The list of arguments to eval (must be two or more)
+ @param env The environemnt to eval to
+ @return True if all arguments are true
+ */
+SExpr ApplyAND(SExpr args, SExpr env);
+
+/**
+    or marco
+ @param args The list of arguments to eval (must be two or more)
+ @param env The environemnt to eval to
+ @return True if one argument is true
+ */
+SExpr ApplyOR(SExpr args, SExpr env);
+
+/**
+    Evals let
+ @param pairs List of varaible value pairs (as lists)
+ @param expr The expression to evaluate and apply the args to
+ @param env The environemnt to eval to
+ @return The evlauated expression
+ */
+SExpr evalLet(SExpr pairs, SExpr expr, SExpr env);
 
 #endif /* eval_h */

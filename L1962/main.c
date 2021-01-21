@@ -34,7 +34,7 @@ void readFile(FILE *fp) {
                 } else {
                     SExpr evaled = eval(expr, NILObj);
                     sprintf(str, "$%d", n);
-                    ApplySETBang(symbolToSExpr(struniq(str)), evaled, NILObj);
+                    evalSETBang(symbolToSExpr(struniq(str)), evaled, NILObj);
                     printf("%s = ", str);
                     printSExpr(evaled);
                     printf("\n");

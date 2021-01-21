@@ -34,7 +34,10 @@ void evalInit(void) {
     addBuiltin(">=", ApplyGREATEREQ);
     addBuiltin("<", ApplyLESS);
     addBuiltin("<=", ApplyLESSEQ);
-
+    
+    addBuiltin("null", ApplyNOT);
+    addBuiltin("nil?", ApplyNOT);
+    addBuiltin("not", ApplyNOT);
 }
 
 SExpr eval(SExpr sexpr, SExpr env) {
@@ -72,22 +75,37 @@ SExpr eval(SExpr sexpr, SExpr env) {
         }
             
         case CONS: // Functions and things
-        { // Need quote, set!, lambda, env, define, if
-            // Special Forms
+        { // Need quote, set!, lambda, env, define, if, and, or
+            // Special Forms and Macros
             const char *sym = car(sexpr).symbol;
             if (sym == sym_QUOTE) {
                 assert(cddr(sexpr).type == NIL);
                 return cadr(sexpr);
             } else if (sym == sym_SETBang) {
                 check(cadr(sexpr).type == SYMBOL);
-                return ApplySETBang(cadr(sexpr), eval(car(cddr(sexpr)), env), env);
+                return evalSETBang(cadr(sexpr), eval(car(cddr(sexpr)), env), env);
             } else if (sym == sym_LAMBDA) {
                 return lambdaToSExpr(cadr(sexpr), cddr(sexpr));
-            } else if (sym == sym_DEFINE || (sym == sym_DEFUN)){
-                ApplyDEFINE(cadr(sexpr), cddr(sexpr));
-                return NILObj;
-            } else if (sym == sym_IF){
-                return ApplyIF(cadr(sexpr), car(cddr(sexpr)), cadr(cddr(sexpr)), env);
+            } else if (sym == sym_LET) {
+                return evalLet(cadr(sexpr), cddr(sexpr), env);
+            } else if (sym == sym_DEFINE) {
+                return evalDefine(cadr(sexpr), cddr(sexpr));
+            } else if (sym == sym_DEFUN) {
+                return evalDEFUN(cadr(sexpr), car(cddr(sexpr)), cdr(cddr(sexpr)));
+            } else if (sym == sym_DEFVAR){
+                return evalDEFVAR(cadr(sexpr), cddr(sexpr));
+            } else if (sym == sym_IF) {
+                if (cdr(cddr(sexpr)).type == NIL) {
+                    return evalIf(cadr(sexpr), car(cddr(sexpr)), NILObj, env);
+                } else {
+                    return evalIf(cadr(sexpr), car(cddr(sexpr)), cadr(cddr(sexpr)), env);
+                }
+            } else if (sym == sym_AND) {
+                check(!isNIL(cddr(sexpr)));       // Must be a two+ element list
+                return ApplyAND(cdr(sexpr), env);
+            } else if (sym == sym_OR) {
+                check(!isNIL(cddr(sexpr)));       // Must be a two+ element list
+                return ApplyOR(cdr(sexpr), env);
             }
             
             
@@ -99,7 +117,7 @@ SExpr eval(SExpr sexpr, SExpr env) {
             
             // Apply functions
             if (first.type == LAMBDA) {
-                return ApplyLAMBDA(*first.lambda, args, env);
+                return evalLambda(*first.lambda, args, env);
             } else if (first.type == BUILTIN) {
                 return (first.builtin.apply)(args);
             }
@@ -127,7 +145,7 @@ SExpr evalList(SExpr c, SExpr env) {
     }
 }
 
-void addBuiltin(const char *name, SExpr (*apply)(SExpr args)){
+void addBuiltin(const char *name, SExpr (*apply)(SExpr args)) {
     SExpr key = makeSymbol(name);
     global = acons(key, makeBuiltin(apply), global);
 }
@@ -164,7 +182,7 @@ SExpr ApplyACONS(SExpr args) {
     return acons(key, value, a_list);
 }
 
-SExpr ApplySETBang(SExpr name, SExpr value, SExpr env) {
+SExpr evalSETBang(SExpr name, SExpr value, SExpr env) {
     check(isSYMBOL(name));
     check(name.symbol != NULL);
     SExpr scopeExisting = assoc(name, env);
@@ -178,7 +196,7 @@ SExpr ApplySETBang(SExpr name, SExpr value, SExpr env) {
     } else {
         global = acons(name, value, global);
     }
-    return NILObj;
+    return name;
 }
 
 SExpr ApplySETCAR(SExpr args) {
@@ -211,7 +229,7 @@ SExpr ApplyDIV(SExpr args) {
     return divideSExpr(args);
 }
 
-SExpr ApplyLAMBDA(Lambda lambda, SExpr args, SExpr env) {
+SExpr evalLambda(Lambda lambda, SExpr args, SExpr env) {
     check(length(args).i == length(lambda.params).i);
     for (SExpr param = lambda.params, arg = args;param.type != NIL; param = cdr(param), arg = cdr(arg)) {
         env = acons(car(param), car(arg), env);
@@ -223,68 +241,127 @@ SExpr ApplyLAMBDA(Lambda lambda, SExpr args, SExpr env) {
     return result;
 }
 
-void ApplyDEFINE(SExpr id, SExpr expr){
-    if (isSYMBOL(id)){
-        ApplySETBang(id, expr, global);
-    } else if (isCONS(id)){
+SExpr evalDefine(SExpr id, SExpr expr) {
+    if (isSYMBOL(id)) {
+        return evalSETBang(id, car(expr), global);
+    } else if (isCONS(id)) {
         SExpr name = car(id);
         SExpr params = cdr(id);
-        ApplySETBang(name, lambdaToSExpr(params, expr), global);
+        return evalSETBang(name, lambdaToSExpr(params, expr), global);
     } else {
         fail("Invalid define: id is not of type SYMBOL or type CONS");
     }
 }
 
-SExpr ApplyLENGTH(SExpr args){
+SExpr evalDEFUN(SExpr name, SExpr params, SExpr expr) {
+    return evalSETBang(name, lambdaToSExpr(params, expr), global);
+}
+
+SExpr evalDEFVAR(SExpr name, SExpr expr) {
+    if(isNIL(expr)) { // Initialize varialbe
+        return evalSETBang(name, NILObj, global);
+    } else {
+        return evalSETBang(name, car(expr), global);
+    }
+}
+
+SExpr ApplyLENGTH(SExpr args) {
     check(isNIL(cdr(args))); // Must be one element
     return length(car(args));
 }
 
-SExpr ApplyEQ(SExpr args){
+SExpr ApplyEQ(SExpr args) {
     check(isNIL(cddr(args)));       // Must be a two element list
     SExpr a = car(args);
     SExpr b = cadr(args);
     return eq(a, b);
 }
 
-SExpr ApplyENV(SExpr args){
+SExpr ApplyENV(SExpr args) {
     check(args.type == NIL);
     return global;
 }
 
-SExpr ApplyIF(SExpr condition, SExpr ifTrue, SExpr ifFalse, SExpr env){
+SExpr evalIf(SExpr condition, SExpr ifTrue, SExpr ifFalse, SExpr env) {
     SExpr evaled = eval(condition, env);
-    if(isTrue(evaled)){
+    if(!isNIL(evaled)) {
         return eval(ifTrue, env);
     } else {
         return eval(ifFalse, env);
     }
 }
 
-SExpr ApplyGREATER(SExpr args){
+SExpr ApplyGREATER(SExpr args) {
     check(isNIL(cddr(args)));       // Must be a two element list
     SExpr a = car(args);
     SExpr b = cadr(args);
     return greater(a, b);
 }
 
-SExpr ApplyGREATEREQ(SExpr args){
+SExpr ApplyGREATEREQ(SExpr args) {
     check(isNIL(cddr(args)));       // Must be a two element list
     SExpr a = car(args);
     SExpr b = cadr(args);
     return greaterEQ(a, b);
 }
 
-SExpr ApplyLESS(SExpr args){
+SExpr ApplyLESS(SExpr args) {
     check(isNIL(cddr(args)));       // Must be a two element list
     SExpr a = car(args);
     SExpr b = cadr(args);
     return less(a, b);
 }
 
-SExpr ApplyLESSEQ(SExpr args){
+SExpr ApplyLESSEQ(SExpr args) {
     check(isNIL(cddr(args)));       // Must be a two element list
     SExpr a = car(args);
     SExpr b = cadr(args);
     return lessEQ(a, b);
 }
+
+SExpr ApplyNOT(SExpr arg) {
+    check(isNIL(cdr(arg)));
+    if (isNIL(car(arg))) {
+        return TObj;
+    } else {
+        return NILObj;
+    }
+}
+
+SExpr ApplyAND(SExpr args, SExpr env) {
+    // does this have a required number of initial terms
+    if (args.type == NIL) {
+        return TObj;
+    }
+    if (isNIL(eval(car(args), env))) {
+        return NILObj;
+    } else {
+        return ApplyAND(cdr(args), env);
+    }
+    
+}
+
+SExpr ApplyOR(SExpr args, SExpr env) {
+    // does this have a required number of initial terms
+    if (args.type == NIL) {
+        return NILObj;
+    }
+    if (isNIL(eval(car(args), env))) {
+        return ApplyOR(cdr(args), env);
+    } else {
+        return TObj;
+    }
+}
+
+SExpr evalLet(SExpr pairs, SExpr expr, SExpr env) {
+    SExpr params = NILObj;
+    SExpr args = NILObj;
+    for (SExpr current = pairs; !isNIL(current); current = cdr(current)) {
+        params = consToSExpr(caar(current), params);
+        args = consToSExpr(car(cdar(current)), args);
+    }
+    Lambda *lambda = makeLambda(params, expr);
+    return evalLambda(*lambda, args, env);
+}
+
+//SExpr evalLambda(Lambda lambda, SExpr args, SExpr env)
