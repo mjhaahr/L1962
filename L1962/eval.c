@@ -200,7 +200,7 @@ SExpr evalLambda(Lambda lambda, SExpr args) {
 
 SExpr evalDefine(SExpr id, SExpr expr) {
     if (isSYMBOL(id)) {
-        return evalSETBang(id, car(expr), global);
+        return evalSETBang(id, eval(car(expr), NILObj), global);
     } else if (isCONS(id)) {
         SExpr name = car(id);
         SExpr params = cdr(id);
@@ -215,10 +215,10 @@ SExpr evalDEFUN(SExpr name, SExpr params, SExpr expr) {
 }
 
 SExpr evalDEFVAR(SExpr name, SExpr expr) {
-    if(isNIL(expr)) { // Initialize varialbe
+    if(isNIL(expr)) { // Initialize variable
         return evalSETBang(name, NILObj, global);
     } else {
-        return evalSETBang(name, car(expr), global);
+        return evalSETBang(name, eval(car(expr), NILObj), global);
     }
 }
 
