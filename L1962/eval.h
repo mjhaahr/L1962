@@ -72,10 +72,9 @@ SExpr evalSETBang(SExpr name, SExpr value, SExpr env);
     lambda special form eval
  @param lambda  The lambda
  @param args  List of arguments
- @param env  The local scope
  @return The result as an SExpr
  */
-SExpr evalLambda(Lambda lambda, SExpr args, SExpr env);
+SExpr evalLambda(Lambda lambda, SExpr args);
 
 /**
     define special form eval (Scheme-sytle)

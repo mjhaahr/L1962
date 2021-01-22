@@ -104,7 +104,7 @@ SExpr eval(SExpr sexpr, SExpr env) {
                 check(cadr(sexpr).type == SYMBOL);
                 return evalSETBang(cadr(sexpr), eval(car(cddr(sexpr)), env), env);
             } else if (sym == sym_LAMBDA) {
-                return lambdaToSExpr(cadr(sexpr), cddr(sexpr));
+                return lambdaToSExpr(cadr(sexpr), cddr(sexpr), env);
             } else if (sym == sym_LET) {
                 return evalLet(cadr(sexpr), cddr(sexpr), env);
             } else if (sym == sym_DEFINE) {
@@ -136,7 +136,7 @@ SExpr eval(SExpr sexpr, SExpr env) {
             
             // Apply functions
             if (first.type == LAMBDA) {
-                return evalLambda(*first.lambda, args, env);
+                return evalLambda(*first.lambda, args);
             } else if (first.type == BUILTIN) {
                 return (first.builtin.apply)(args);
             }
@@ -186,14 +186,14 @@ SExpr evalSETBang(SExpr name, SExpr value, SExpr env) {
     return name;
 }
 
-SExpr evalLambda(Lambda lambda, SExpr args, SExpr env) {
+SExpr evalLambda(Lambda lambda, SExpr args) {
     check(length(args).i == length(lambda.params).i);
     for (SExpr param = lambda.params, arg = args;param.type != NIL; param = cdr(param), arg = cdr(arg)) {
-        env = acons(car(param), car(arg), env);
+        lambda.env = acons(car(param), car(arg), lambda.env);
     }
     SExpr result = NILObj;
     for (SExpr expr = lambda.exprs; expr.type != NIL; expr = cdr(expr)) {
-        result = eval(car(expr), env);
+        result = eval(car(expr), lambda.env);
     }
     return result;
 }
@@ -204,14 +204,14 @@ SExpr evalDefine(SExpr id, SExpr expr) {
     } else if (isCONS(id)) {
         SExpr name = car(id);
         SExpr params = cdr(id);
-        return evalSETBang(name, lambdaToSExpr(params, expr), global);
+        return evalSETBang(name, lambdaToSExpr(params, expr, NILObj), global);
     } else {
         fail("Invalid define: id is not of type SYMBOL or type CONS");
     }
 }
 
 SExpr evalDEFUN(SExpr name, SExpr params, SExpr expr) {
-    return evalSETBang(name, lambdaToSExpr(params, expr), global);
+    return evalSETBang(name, lambdaToSExpr(params, expr, NILObj), global);
 }
 
 SExpr evalDEFVAR(SExpr name, SExpr expr) {
@@ -268,6 +268,6 @@ SExpr evalLet(SExpr pairs, SExpr expr, SExpr env) {
         params = consToSExpr(caar(current), params);
         args = consToSExpr(car(cdar(current)), args);
     }
-    Lambda *lambda = makeLambda(params, expr);
-    return evalLambda(*lambda, args, env);
+    Lambda *lambda = makeLambda(params, expr, env);
+    return evalLambda(*lambda, args);
 }

@@ -130,17 +130,18 @@ SExpr consToSExpr(SExpr car, SExpr cdr) {
     
 }
 
-Lambda *makeLambda(SExpr params, SExpr exprs) {
+Lambda *makeLambda(SExpr params, SExpr exprs, SExpr env) {
     Lambda *lambda = malloc(sizeof(Lambda));
     lambda->params = params;
     lambda->exprs = exprs;
+    lambda->env = env;
     return lambda;
 }
 
-SExpr lambdaToSExpr(SExpr params, SExpr exprs) {
+SExpr lambdaToSExpr(SExpr params, SExpr exprs, SExpr env) {
     SExpr expr;
     expr.type = LAMBDA;
-    expr.lambda = makeLambda(params, exprs);
+    expr.lambda = makeLambda(params, exprs, env);
     return expr;
 }
 

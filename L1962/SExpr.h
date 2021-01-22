@@ -68,6 +68,7 @@ struct Cons{ // Lisp style list notation
 struct Lambda{ // Lisp style list notation
     SExpr params;
     SExpr exprs;
+    SExpr env; // Support for Lexical scope
 };
 
 
@@ -141,17 +142,19 @@ SExpr consToSExpr(SExpr car, SExpr cdr);
     Makes a Lambda
  @param params  Lambda parameters
  @param exprs   Lambda expressions
+ @param env The Lexical Scope of the lambda
  @return The Lambda
  */
-Lambda *makeLambda(SExpr params, SExpr exprs);
+Lambda *makeLambda(SExpr params, SExpr exprs, SExpr env);
 
 /**
     Makes a Lambda as an SExpr
  @param params  Lambda parameters
  @param exprs   Lambda expressions
+ @param env The Lexical Scope of the lambda
  @return The Lambda SExpr
  */
-SExpr lambdaToSExpr(SExpr params, SExpr exprs);
+SExpr lambdaToSExpr(SExpr params, SExpr exprs, SExpr env);
 
 /**
     Makes a builtin SExpr
