@@ -23,6 +23,8 @@ extern const char *sym_IF; // if symbol value
 extern const char *sym_AND; // and symbol value
 extern const char *sym_OR; // or symbol value
 extern const char *sym_LET; // let symbol value
+extern const char *sym_PROGN; // progn symbol value
+extern const char *sym_BEGIN; // begin symbol value
 
 typedef enum { // SExpression Types
     NIL,    // Nothing

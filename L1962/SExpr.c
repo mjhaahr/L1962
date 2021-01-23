@@ -34,6 +34,8 @@ const char *sym_IF = NULL;
 const char *sym_AND = NULL;
 const char *sym_OR = NULL;
 const char *sym_LET = NULL;
+const char *sym_PROGN = NULL;
+const char *sym_BEGIN = NULL;
 
 
 void SExprInit(void) {
@@ -47,6 +49,8 @@ void SExprInit(void) {
     sym_AND = struniq("and");
     sym_OR = struniq("or");
     sym_LET = struniq("let");
+    sym_PROGN = struniq("progn");
+    sym_BEGIN = struniq("begin");
     
     TObj.symbol = struniq("true");
 }

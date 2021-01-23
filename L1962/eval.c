@@ -111,7 +111,7 @@ SExpr eval(SExpr sexpr, SExpr env) {
                 return evalDefine(cadr(sexpr), cddr(sexpr));
             } else if (sym == sym_DEFUN) {
                 return evalDEFUN(cadr(sexpr), car(cddr(sexpr)), cdr(cddr(sexpr)));
-            } else if (sym == sym_DEFVAR){
+            } else if (sym == sym_DEFVAR) {
                 return evalDEFVAR(cadr(sexpr), cddr(sexpr));
             } else if (sym == sym_IF) {
                 if (cdr(cddr(sexpr)).type == NIL) {
@@ -125,6 +125,8 @@ SExpr eval(SExpr sexpr, SExpr env) {
             } else if (sym == sym_OR) {
                 check(!isNIL(cddr(sexpr)));       // Must be a two+ element list
                 return evalOr(cdr(sexpr), env);
+            } else if (sym == sym_PROGN || sym == sym_BEGIN) {
+                return evalProgn(cdr(sexpr), env);
             }
             
             
@@ -192,7 +194,7 @@ SExpr evalLambda(Lambda lambda, SExpr args) {
     for (param = lambda.params, arg = args;param.type == CONS; param = cdr(param), arg = cdr(arg)) {
         lambda.env = acons(car(param), car(arg), lambda.env);
     }
-    if (param.type == NIL){
+    if (param.type == NIL) {
         check(args.type == NIL);
     } else if (param.type == SYMBOL) {
         lambda.env = acons(param, arg, lambda.env);
@@ -278,4 +280,12 @@ SExpr evalLet(SExpr pairs, SExpr expr, SExpr env) {
     }
     Lambda *lambda = makeLambda(params, expr, env);
     return evalLambda(*lambda, args);
+}
+
+SExpr evalProgn(SExpr exprs, SExpr env) {
+    SExpr result = NILObj;
+    for (SExpr current = exprs; !isNIL(current); current = cdr(current)) {
+        result = eval(car(current), env);
+    }
+    return result;
 }

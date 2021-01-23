@@ -143,4 +143,12 @@ SExpr evalOr(SExpr args, SExpr env);
  */
 SExpr evalLet(SExpr pairs, SExpr expr, SExpr env);
 
+/**
+    Eval Progn (Lisp name, equivalent to Scheme begin, same behavior)
+ @param exprs The list of expressions to evaluate
+ @param env The environemnt to eval to
+ @return The last evaled expression
+ */
+SExpr evalProgn(SExpr exprs, SExpr env);
+
 #endif /* eval_h */
