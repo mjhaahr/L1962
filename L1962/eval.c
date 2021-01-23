@@ -187,9 +187,17 @@ SExpr evalSETBang(SExpr name, SExpr value, SExpr env) {
 }
 
 SExpr evalLambda(Lambda lambda, SExpr args) {
-    check(length(args).i == length(lambda.params).i);
-    for (SExpr param = lambda.params, arg = args;param.type != NIL; param = cdr(param), arg = cdr(arg)) {
+    SExpr param;
+    SExpr arg;
+    for (param = lambda.params, arg = args;param.type == CONS; param = cdr(param), arg = cdr(arg)) {
         lambda.env = acons(car(param), car(arg), lambda.env);
+    }
+    if (param.type == NIL){
+        check(args.type == NIL);
+    } else if (param.type == SYMBOL) {
+        lambda.env = acons(param, arg, lambda.env);
+    } else {
+        fail("Illegal type at end of lambda parameter list: %s", SExprName(param.type));
     }
     SExpr result = NILObj;
     for (SExpr expr = lambda.exprs; expr.type != NIL; expr = cdr(expr)) {
