@@ -16,7 +16,7 @@ static int unreadPresent = 0;
  @return True if in set, false if not
  */
 int isSymbol(int c) {
-    if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) || (c == '+') || (c == '*') || (c == '/') || (c == '%') || (c == '!') || (c == '?') || (c == '&') || (c == '^') || (c == '|') || (c == '<') || (c == '>') || (c == '$')) {
+    if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) || (c == '+') || (c == '*') || (c == '/') || (c == '%') || (c == '!') || (c == '?') || (c == '&') || (c == '^') || (c == '|') || (c == '<') || (c == '>') || (c == '$') || (c == '=')) {
         return 1;
     } else {
         return 0;
@@ -117,6 +117,16 @@ Token readToken(FILE *fp) {
         token.type = TOKEN_CLOSEP;
         unread = token;
         return token;
+    } else if (c == '[') {
+        index++;
+        token.type = TOKEN_OPENB;
+        unread = token;
+        return token;
+    } else if (c == ']') {
+        index++;
+        token.type = TOKEN_CLOSEB;
+        unread = token;
+        return token;
     } else if (c == '\'') {
         index++;
         token.type = TOKEN_QUOTE;
@@ -149,7 +159,7 @@ Token readToken(FILE *fp) {
         token.value.i = atoi(buf);
     } else if (id == TOKEN_REAL) {     // if REAL, atof()
         token.value.r = atof(buf);
-    } else if (id == TOKEN_SYMBOL) {                    // if SYMBOL, write the buffer (via struniq)
+    } else if (id == TOKEN_SYMBOL) {   // if SYMBOL, write the buffer (via struniq)
         token.value.s = struniq(buf);
     }
     unread = token;
@@ -186,6 +196,14 @@ void printToken(Token token) {
             
         case TOKEN_CLOSEP:
             printf(")");
+            break;
+            
+        case TOKEN_OPENB:
+            printf("[");
+            break;
+            
+        case TOKEN_CLOSEB:
+            printf("]");
             break;
             
         case TOKEN_QUOTE:
@@ -229,6 +247,14 @@ const char *tokenName(TokenType type) {
             
         case TOKEN_CLOSEP:
             return "CLOSE P";
+            break;
+            
+        case TOKEN_OPENB:
+            return "OPEN B";
+            break;
+            
+        case TOKEN_CLOSEB:
+            return "CLOSE B";
             break;
             
         case TOKEN_QUOTE:

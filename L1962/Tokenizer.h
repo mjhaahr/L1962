@@ -30,6 +30,8 @@ typedef enum TokenType {
     TOKEN_QUOTE = 5,       // '
     TOKEN_REAL = 6,        // -?[0-9]*.[0-9]*
     TOKEN_DOT = 7,         // . with not sign or digit on either side
+    TOKEN_OPENB = 8,       // [
+    TOKEN_CLOSEB = 9,      // [
 } TokenType;
 
 

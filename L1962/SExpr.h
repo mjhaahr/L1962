@@ -20,11 +20,15 @@ extern const char *sym_DEFINE; // define symbol value
 extern const char *sym_DEFUN; // defun symbol value
 extern const char *sym_DEFVAR; // defvar symbol value
 extern const char *sym_IF; // if symbol value
+extern const char *sym_COND; // cond symbol value
+extern const char *sym_WHEN; // when symbol value
+extern const char *sym_UNLESS; // unless symbol value
 extern const char *sym_AND; // and symbol value
 extern const char *sym_OR; // or symbol value
 extern const char *sym_LET; // let symbol value
 extern const char *sym_PROGN; // progn symbol value
 extern const char *sym_BEGIN; // begin symbol value
+extern const char *sym_APPLY; // apply symbol value
 
 typedef enum { // SExpression Types
     NIL,    // Nothing
@@ -227,6 +231,15 @@ const char *SExprName(SExprType type);
 SExpr readSExpr(FILE *fp);
 
 /**
+    Deals with bracketing chars
+ @param fp   The file pointer for the file to be read and parsed
+ @param expType The expected closing type
+ @param failType The failing closing type
+ @return The next SExpr in the file as a SExpr struct
+ */
+SExpr readList(FILE *fp, TokenType expType, TokenType failType);
+
+/**
     car Builtin - gets the first element of the cons
  @param c The cons to get the car of
  @return The car of the cons
@@ -374,5 +387,12 @@ SExpr lessEQ(SExpr a, SExpr b);
  @return the Result as an SExpr
  */
 SExpr not(SExpr arg);
+
+/**
+    cons?
+ @param arg The one argument to invert
+ @return the Result as an SExpr
+ */
+SExpr cons(SExpr arg);
 
 #endif /* SExpr_h */

@@ -12,8 +12,8 @@
 DEFINE_WRAPPER_1(car);
 DEFINE_WRAPPER_1(cdr);
 
-DEFINE_WRAPPER_1(length);
 DEFINE_WRAPPER_1(not);
+DEFINE_WRAPPER_1(cons);
 
 DEFINE_WRAPPER_2(consToSExpr);
 DEFINE_WRAPPER_2(assoc);
@@ -33,6 +33,7 @@ SExpr global = { NIL }; //The global environment
 void evalInit(void) {
     global = acons(makeSymbol("nil"), NILObj, global);
     global = acons(makeSymbol("true"), TObj, global);
+    global = acons(makeSymbol("t"), TObj, global);
     
     addBuiltin("car", apply_car);
     addBuiltin("cdr", apply_cdr);
@@ -47,8 +48,8 @@ void evalInit(void) {
     addBuiltin("-", subtractSExpr);
     addBuiltin("*", multiplySExpr);
     addBuiltin("/", divideSExpr);
-    addBuiltin("length", apply_length);
     addBuiltin("equal", apply_eq);
+    addBuiltin("=", apply_eq);
     addBuiltin(">", apply_greater);
     addBuiltin(">=", apply_greaterEQ);
     addBuiltin("<", apply_less);
@@ -56,7 +57,11 @@ void evalInit(void) {
     
     addBuiltin("null", apply_not);
     addBuiltin("nil?", apply_not);
+    addBuiltin("empty?", apply_not);
     addBuiltin("not", apply_not);
+    
+    addBuiltin("listp", apply_cons);
+    addBuiltin("cons?", apply_cons);
 }
 
 SExpr eval(SExpr sexpr, SExpr env) {
@@ -119,6 +124,12 @@ SExpr eval(SExpr sexpr, SExpr env) {
                 } else {
                     return evalIf(cadr(sexpr), car(cddr(sexpr)), cadr(cddr(sexpr)), env);
                 }
+            } else if (sym == sym_COND) {
+                return evalCond(cdr(sexpr), env);
+            } else if (sym == sym_WHEN) {
+                return evalWhen(cadr(sexpr), cddr(sexpr), env);
+            } else if (sym == sym_UNLESS) {
+                return evalUnless(cadr(sexpr), cddr(sexpr), env);
             } else if (sym == sym_AND) {
                 check(!isNIL(cddr(sexpr)));       // Must be a two+ element list
                 return evalAnd(cdr(sexpr), env);
@@ -127,6 +138,8 @@ SExpr eval(SExpr sexpr, SExpr env) {
                 return evalOr(cdr(sexpr), env);
             } else if (sym == sym_PROGN || sym == sym_BEGIN) {
                 return evalProgn(cdr(sexpr), env);
+            } else if (sym == sym_APPLY) {
+                return evalApply(cadr(sexpr), cddr(sexpr), env);
             }
             
             
@@ -177,7 +190,7 @@ SExpr evalSETBang(SExpr name, SExpr value, SExpr env) {
     SExpr scopeExisting = assoc(name, env);
     if (!isNIL(scopeExisting)) {
         scopeExisting.cons->cdr = value;
-        return NILObj;
+        return name;
     }
     SExpr globalExisting = assoc(name, global);
     if (!isNIL(globalExisting)) {
@@ -191,11 +204,11 @@ SExpr evalSETBang(SExpr name, SExpr value, SExpr env) {
 SExpr evalLambda(Lambda lambda, SExpr args) {
     SExpr param;
     SExpr arg;
-    for (param = lambda.params, arg = args;param.type == CONS; param = cdr(param), arg = cdr(arg)) {
+    for (param = lambda.params, arg = args; param.type == CONS; param = cdr(param), arg = cdr(arg)) {
         lambda.env = acons(car(param), car(arg), lambda.env);
     }
     if (param.type == NIL) {
-        check(args.type == NIL);
+        check(arg.type == NIL);
     } else if (param.type == SYMBOL) {
         lambda.env = acons(param, arg, lambda.env);
     } else {
@@ -246,6 +259,47 @@ SExpr evalIf(SExpr condition, SExpr ifTrue, SExpr ifFalse, SExpr env) {
     }
 }
 
+SExpr evalCond(SExpr exprs, SExpr env) {
+    SExpr result = NILObj;
+    SExpr current;
+    for (current = exprs; isNIL(eval(car(car(current)), env)); current = cdr(current)) { // Repeat until a statement is true
+        if (isNIL(cdr(current))) {
+            current = consToSExpr(NILObj, NILObj); // fills out the current buffer, needs a car and a cdr
+            break;
+        }
+    }
+    for (current = car(current); !isNIL(current); current = cdr(current)) {
+        result = eval(car(current), env);
+    }
+    return result;
+}
+
+SExpr evalWhen(SExpr condition, SExpr exprs, SExpr env) {
+    SExpr evaled = eval(condition, env);
+    if (!isNIL(evaled)) {
+        SExpr result = NILObj;
+        for (SExpr current = exprs; !isNIL(current); current = cdr(current)) {
+            result = eval(car(current), env);
+        }
+        return result;
+    } else {
+        return NILObj;
+    }
+}
+
+SExpr evalUnless(SExpr condition, SExpr exprs, SExpr env) {
+    SExpr evaled = eval(condition, env);
+    if (isNIL(evaled)) {
+        SExpr result = NILObj;
+        for (SExpr current = exprs; !isNIL(current); current = cdr(current)) {
+            result = eval(car(current), env);
+        }
+        return result;
+    } else {
+        return NILObj;
+    }
+}
+
 SExpr evalAnd(SExpr args, SExpr env) {
     // does this have a required number of initial terms
     if (args.type == NIL) {
@@ -288,4 +342,10 @@ SExpr evalProgn(SExpr exprs, SExpr env) {
         result = eval(car(current), env);
     }
     return result;
+}
+
+SExpr evalApply(SExpr func, SExpr args, SExpr env){
+    args = eval(consToSExpr(makeSymbol("list*"), args), env);
+    SExpr applied = consToSExpr(func, args);
+    return eval(applied, env);
 }

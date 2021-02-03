@@ -31,11 +31,15 @@ const char *sym_DEFINE = NULL;
 const char *sym_DEFUN = NULL;
 const char *sym_DEFVAR = NULL;
 const char *sym_IF = NULL;
+const char *sym_COND = NULL;
+const char *sym_WHEN = NULL;
+const char *sym_UNLESS = NULL;
 const char *sym_AND = NULL;
 const char *sym_OR = NULL;
 const char *sym_LET = NULL;
 const char *sym_PROGN = NULL;
 const char *sym_BEGIN = NULL;
+const char *sym_APPLY = NULL;
 
 
 void SExprInit(void) {
@@ -46,11 +50,15 @@ void SExprInit(void) {
     sym_DEFUN = struniq("defun");
     sym_DEFVAR = struniq("defvar");
     sym_IF = struniq("if");
+    sym_COND = struniq("cond");
+    sym_WHEN = struniq("when");
+    sym_UNLESS = struniq("unless");
     sym_AND = struniq("and");
     sym_OR = struniq("or");
     sym_LET = struniq("let");
     sym_PROGN = struniq("progn");
     sym_BEGIN = struniq("begin");
+    sym_APPLY = struniq("apply");
     
     TObj.symbol = struniq("true");
 }
@@ -363,46 +371,11 @@ SExpr readSExpr(FILE *fp) {
             break;
             
         case TOKEN_OPENP:
-            token = readToken(fp); // First term or close parens
-            if(token.type == TOKEN_CLOSEP) { // Auto Nil;
-                expr.type = NIL;
-            } else {
-                unreadToken(token);
-                SExpr car = readSExpr(fp);
-                if (car.type == EOF) {
-                    fail("Early EOF");
-                }
-                expr = consToSExpr(car, NILObj); // First
-                expr.type = CONS;
-                SExpr last = expr;
-                
-                token = readToken(fp);
-                while(token.type != TOKEN_CLOSEP) {
-                    if (token.type == TOKEN_DOT) {
-                        SExpr cdr = readSExpr(fp);
-                        if (cdr.type == EOF) {
-                            fail("Early EOF");
-                        }
-                        last.cons->cdr = cdr;
-                        token = readToken(fp);
-                        if (token.type != TOKEN_CLOSEP) {
-                            fail("Invalid Token of type: %s instead of CLOSE P", tokenName(token.type));
-                        }
-                        unreadToken(token);
-                        
-                    } else {
-                        unreadToken(token);
-                        car = readSExpr(fp);
-                        if (car.type == END) {
-                            fail("Early EOF");
-                        }
-                        last.cons->cdr = consToSExpr(car, NILObj);
-                        last = last.cons->cdr;
-                    }
-                    token = readToken(fp);
-                }
-                
-            }
+            expr = readList(fp, TOKEN_CLOSEP, TOKEN_CLOSEB);
+            break;
+            
+        case TOKEN_OPENB:
+            expr = readList(fp, TOKEN_CLOSEB, TOKEN_CLOSEP);
             break;
             
         case TOKEN_QUOTE: {
@@ -416,6 +389,59 @@ SExpr readSExpr(FILE *fp) {
             
         default:
             fail("Default Error, Not of Valid Token Type");
+    }
+    return expr;
+}
+
+SExpr readList(FILE *fp, TokenType expType, TokenType failType){
+    SExpr expr;
+    Token token = readToken(fp); // First term or close parens
+    if(token.type == expType) { // Auto Nil;
+        expr.type = NIL;
+    } else if (token.type == failType) { // Auto Fail;
+        fail("Incorrect closing character");
+    } else {
+        unreadToken(token);
+        SExpr car = readSExpr(fp);
+        if (car.type == EOF) {
+            fail("Early EOF");
+        }
+        expr = consToSExpr(car, NILObj); // First
+        expr.type = CONS;
+        SExpr last = expr;
+        
+        token = readToken(fp);
+        while(token.type != expType) {
+            if (token.type == failType) { // Auto Fail;
+                fail("Incorrect closing character");
+            }
+            if (token.type == TOKEN_DOT) {
+                SExpr cdr = readSExpr(fp);
+                if (cdr.type == EOF) {
+                    fail("Early EOF");
+                }
+                last.cons->cdr = cdr;
+                token = readToken(fp);
+                if (token.type != expType) {
+                    if (token.type == failType) { // Auto Fail;
+                        fail("Incorrect closing character");
+                    }
+                    fail("Invalid Token of type: %s instead of CLOSE P", tokenName(token.type));
+                }
+                unreadToken(token);
+                
+            } else {
+                unreadToken(token);
+                car = readSExpr(fp);
+                if (car.type == END) {
+                    fail("Early EOF");
+                }
+                last.cons->cdr = consToSExpr(car, NILObj);
+                last = last.cons->cdr;
+            }
+            token = readToken(fp);
+        }
+        
     }
     return expr;
 }
@@ -701,7 +727,15 @@ SExpr lessEQ(SExpr a, SExpr b) {
 }
 
 SExpr not(SExpr arg){
-    if (isNIL(car(arg))) {
+    if (isNIL(arg)) {
+        return TObj;
+    } else {
+        return NILObj;
+    }
+}
+
+SExpr cons(SExpr arg){
+    if (isCONS(arg)) {
         return TObj;
     } else {
         return NILObj;

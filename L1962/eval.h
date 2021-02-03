@@ -31,6 +31,12 @@
     }
 // check that args is a list of exactly three elements
 
+#define DEFINE_WRAPPER_ARGS(name) \
+    SExpr apply_ ## name(SExpr args) { \
+        return name(args); \
+    }
+// Builtins that take all of args
+
 /**
     Initializes the global environment (global)
  */
@@ -119,6 +125,33 @@ SExpr env(SExpr args);
 SExpr evalIf(SExpr condition, SExpr ifTrue, SExpr ifFalse, SExpr env);
 
 /**
+    cond special form eval
+ @param exprs List of Expressions to eval, car of each expression is the conditional, then eval the rest
+ @param env The environemnt to eval to
+ @return The result of the last of the evals
+ */
+SExpr evalCond(SExpr exprs, SExpr env);
+
+/**
+    when special form eval
+ @param condition The condition
+ @param exprs The expressions to eval
+ @param env The environemnt to eval to
+ @return The result of the last of the evals
+ */
+SExpr evalWhen(SExpr condition, SExpr exprs, SExpr env);
+
+/**
+    unless special form eval
+ @param condition The condition
+ @param exprs The expressions to eval
+ @param env The environemnt to eval to
+ @return The result of the last of the evals
+ */
+SExpr evalUnless(SExpr condition, SExpr exprs, SExpr env);
+
+
+/**
     and macro
  @param args The list of arguments to eval (must be two or more)
  @param env The environemnt to eval to
@@ -150,5 +183,14 @@ SExpr evalLet(SExpr pairs, SExpr expr, SExpr env);
  @return The last evaled expression
  */
 SExpr evalProgn(SExpr exprs, SExpr env);
+
+/**
+    Eval apply
+ @param func The function to evaluate
+ @param args The aguments to the function
+ @param env The environemnt to eval to
+ @return The evaluated function
+ */
+SExpr evalApply(SExpr func, SExpr args, SExpr env);
 
 #endif /* eval_h */

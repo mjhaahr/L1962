@@ -15,8 +15,9 @@
 /**
     Reads a file (can be stdin) and reads each token individually and prints them
  @param fp   The file pointer for the file to be read and tokenized
+ @param print Should it print
  */
-void readFile(FILE *fp) {
+void readFile(FILE *fp, int print) {
     int isInteractive = isatty(fileno(fp)); // Checks if the given file is a console (ineractive) to allow for prompting
     int EOFBool = 1; // True while hasn't seen EOF
     int n = 1; // Environment saved variables
@@ -31,15 +32,20 @@ void readFile(FILE *fp) {
                 SExpr expr = readSExpr(fp);
                 if (expr.type == END) {
                     EOFBool = 0;
-                    printf("\n");
+                    if(print){
+                        printf("\n");
+                    }
+                    
                 } else {
                     SExpr evaled = eval(expr, NILObj);
-                    sprintf(str, "$%d", n);
-                    evalSETBang(symbolToSExpr(struniq(str)), evaled, NILObj);
-                    printf("%s = ", str);
-                    printSExpr(evaled);
-                    printf("\n");
-                    n++;
+                    if(print){
+                        sprintf(str, "$%d", n);
+                        evalSETBang(symbolToSExpr(struniq(str)), evaled, NILObj);
+                        printf("%s = ", str);
+                        printSExpr(evaled);
+                        printf("\n");
+                        n++;
+                    }
                 }
             }, {
                 printf("caught: %s\n", e.message);
@@ -51,10 +57,27 @@ int main(int argc, char **argv) {
     hashInit();
     SExprInit();
     evalInit();
+    // Load initial files
+    TRY_CATCH(failure,
+        {
+            printf("Loading: init.lisp\n");
+            FILE *fp = fopen("init.lisp", "r");
+            if (fp == NULL) {
+                fail("can't open file: init.lisp");
+            }
+            TRY_FINALLY({
+                readFile(fp, 0);
+                }, {
+                    fclose(fp);
+                });
+            printf("init.lisp loaded successfully\n");
+        }, {
+            fprintf(stderr, "failure on init.lisp: %s\n", failure.message);
+        });
     if (argc == 1) {     // If one arg, tokenize stdin
         TRY_CATCH(failure,
             {
-                readFile(stdin);
+                readFile(stdin, 1);
             }, {
                 fprintf(stderr, "failure on %s: %s\n", "stdin", failure.message);
             });
@@ -68,7 +91,7 @@ int main(int argc, char **argv) {
                         fail("can't open file: %s", argv[i]);
                     }
                     TRY_FINALLY({
-                        readFile(fp);
+                        readFile(fp, 1);
                         }, {
                             fclose(fp);
                             printf("cleaned up after %s\n", argv[i]);
