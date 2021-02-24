@@ -51,7 +51,7 @@ Token readToken(FILE *fp) {
     }
     
     int index = 0;
-    char buf[BUFSIZ];       // Compiler allocates in a smart way, reallocates it at same location
+    char buf[BUFSIZ] = {0};       // Compiler allocates in a smart way, reallocates it at same location
     
     TokenType id;      // Matching ID for the given char
     
@@ -132,6 +132,21 @@ Token readToken(FILE *fp) {
         token.type = TOKEN_QUOTE;
         unread = token;
         return token;
+    } else if (c == '"') {
+        id = TOKEN_STRING;
+        for (c = getc(fp); c != '"'; c = getc(fp)) { // While c is not a closed quote
+            if (c == '\\') {    // Escape char, skip and copy
+                buf[index++] = getc(fp);
+            } else {
+                buf[index++] = c;
+            }
+        }
+        buf[index] = 0;     // End Token Value
+    } else if (c == '#') {
+        token.type = TOKEN_CHAR;
+        getc(fp);
+        token.value.c = getc(fp);
+        return token;
     } else {
         token.type = TOKEN_INVALID;
         if (isspace(c)) {    // Valid Token break (whitespace or ';')
@@ -147,6 +162,7 @@ Token readToken(FILE *fp) {
         }
         while (token.type == TOKEN_INVALID) {
             token = readToken(fp);
+            
         }
         return token;
     }
@@ -161,6 +177,8 @@ Token readToken(FILE *fp) {
         token.value.r = atof(buf);
     } else if (id == TOKEN_SYMBOL) {   // if SYMBOL, write the buffer (via struniq)
         token.value.s = struniq(buf);
+    } else if (id == TOKEN_STRING) {   // if STRING, strdup
+        token.value.str = strdup(buf);
     }
     unread = token;
     return token;
@@ -217,10 +235,56 @@ void printToken(Token token) {
         case TOKEN_DOT:
             printf(".");
             break;
+        
+        case TOKEN_STRING:
+            printf("%s", token.value.str);
+            break;
+            
+        case TOKEN_CHAR:
+            printf("#\\%c", token.value.c);
+            break;
             
         default:
             break;
     }
+}
+
+void printChar(char c) {
+    char *str;
+    switch (c) {
+        case 0: // Doesn't work, 0 is used as reference else where
+            str = "null";
+            break;
+            
+        case 7:
+            str = "bell";
+            break;
+            
+        case '\t':
+            str = "tab";
+            break;
+        
+        case '\n':
+            str = "newline";
+            break;
+            
+        case ' ':
+            str = "space";
+            break;
+            
+        default:
+        {
+            if (isprint(c)) {
+                printf("#\\%c", c);
+                return;
+            } else {
+                printf("#\\u%x", c);
+                return;
+            }
+            
+        }
+    }
+    printf("#\\%s", str);
 }
 
 const char *tokenName(TokenType type) {
@@ -267,6 +331,14 @@ const char *tokenName(TokenType type) {
             
         case TOKEN_DOT:
             return "DOT";
+            break;
+            
+        case TOKEN_STRING:
+            return "STRING";
+            break;
+            
+        case TOKEN_CHAR:
+            return "CHAR";
             break;
             
         default:

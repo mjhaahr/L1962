@@ -39,7 +39,9 @@ typedef enum { // SExpression Types
     INT,
     REAL,
     INVALID,
+    STRING,
     END,
+    CHAR,
 } SExprType;
 
 typedef struct SExpr SExpr;
@@ -63,6 +65,8 @@ struct SExpr { // SExpression Struct
         int64_t i;
         double r;
         const char *symbol;
+        const char *string;
+        char c;
     };
 };
 
@@ -203,6 +207,20 @@ SExpr makeSymbol(const char* symbol);
  @return The new SExpr
  */
 SExpr makeNIL(void);
+
+/**
+    Makes a string an SExpr and strdup's it
+ @param str The string to convert to an SExpr
+ @return The new SExpr
+ */
+SExpr stringToSExpr(const char* str);
+
+/**
+    Makes a char an SExpr
+ @param c The char to convert to an SExpr
+ @return The new SExpr
+ */
+SExpr charToSExpr(char c);
 
 /**
     Prints an SExpr as a heirarchy
@@ -390,9 +408,93 @@ SExpr not(SExpr arg);
 
 /**
     cons?
- @param arg The one argument to invert
+ @param arg The 1 arguments to cons
  @return the Result as an SExpr
  */
 SExpr cons(SExpr arg);
+
+/**
+    string-legnth
+ @param arg The arg to get the legnth of string
+ @return the result as an SExpr
+ */
+SExpr strlength(SExpr arg);
+
+/**
+    string?
+ @param arg The arg
+ @return the result as an SExpr
+ */
+SExpr str(SExpr arg);
+
+/**
+    string-upcase
+ @param arg The arg to upcase
+ @return the result as an SExpr
+ */
+SExpr strup(SExpr arg);
+
+/**
+    string-downcase
+ @param arg The arg to downcase
+ @return the result as an SExpr
+ */
+SExpr strlow(SExpr arg);
+
+/**
+    Eval string-append
+ @param args The list of strings
+ @return The appeneded string
+ */
+SExpr evalAppend(SExpr args);
+
+/**
+    string-append
+ @param a The first string
+ @param b The second string
+ @return the result as an SExpr
+ */
+SExpr append(SExpr a, SExpr b);
+
+/**
+    Eval Substring
+ @param args The arguments to sort through
+ @return The new substring
+ */
+SExpr evalSubstring(SExpr args);
+
+/**
+    char?
+ @param arg The arg
+ @return the result as an SExpr
+ */
+SExpr Char(SExpr arg);
+
+/**
+    char->integer
+ @param arg The arg
+ @return the result as an SExpr
+ */
+SExpr charToInt(SExpr arg);
+
+/**
+    integer->char
+ @param arg The arg
+ @return the result as an SExpr
+ */
+SExpr intToChar(SExpr arg);
+/**
+    Eval list->string
+ @param args Turns a list of char into a string
+ @return The appeneded string
+ */
+SExpr evalListToString(SExpr args);
+
+/**
+    string->list
+ @param arg The arg
+ @return the result as an SExpr
+ */
+SExpr stringToList(SExpr arg);
 
 #endif /* SExpr_h */

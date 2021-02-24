@@ -15,6 +15,16 @@ DEFINE_WRAPPER_1(cdr);
 DEFINE_WRAPPER_1(not);
 DEFINE_WRAPPER_1(cons);
 
+DEFINE_WRAPPER_1(strlength);
+DEFINE_WRAPPER_1(str);
+DEFINE_WRAPPER_1(strup);
+DEFINE_WRAPPER_1(strlow);
+DEFINE_WRAPPER_1(stringToList);
+
+DEFINE_WRAPPER_1(Char);
+DEFINE_WRAPPER_1(charToInt);
+DEFINE_WRAPPER_1(intToChar);
+
 DEFINE_WRAPPER_2(consToSExpr);
 DEFINE_WRAPPER_2(assoc);
 DEFINE_WRAPPER_2(setcar);
@@ -62,6 +72,19 @@ void evalInit(void) {
     
     addBuiltin("listp", apply_cons);
     addBuiltin("cons?", apply_cons);
+    
+    addBuiltin("string-length", apply_strlength);
+    addBuiltin("string?", apply_str);
+    addBuiltin("string-upcase", apply_strup);
+    addBuiltin("string-downcase", apply_strlow);
+    addBuiltin("string-append", evalAppend);
+    addBuiltin("substring", evalSubstring);
+    addBuiltin("list->string", evalListToString);
+    addBuiltin("string->list", apply_stringToList);
+    
+    addBuiltin("char?", apply_Char);
+    addBuiltin("char->integer", apply_charToInt);
+    addBuiltin("integer->char", apply_intToChar);
 }
 
 SExpr eval(SExpr sexpr, SExpr env) {
@@ -76,6 +99,12 @@ SExpr eval(SExpr sexpr, SExpr env) {
             return sexpr;
             
         case NIL: // Self - Returning
+            return sexpr;
+            
+        case STRING: // Self - Returning
+            return sexpr;
+            
+        case CHAR: // Self - Returning
             return sexpr;
             
         case SYMBOL: // Variable Names
@@ -344,7 +373,7 @@ SExpr evalProgn(SExpr exprs, SExpr env) {
     return result;
 }
 
-SExpr evalApply(SExpr func, SExpr args, SExpr env){
+SExpr evalApply(SExpr func, SExpr args, SExpr env) {
     args = eval(consToSExpr(makeSymbol("list*"), args), env);
     SExpr applied = consToSExpr(func, args);
     return eval(applied, env);

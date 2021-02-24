@@ -111,6 +111,16 @@ SExpr eq(SExpr a, SExpr b) {
                 }
             }
                 
+            case STRING:
+                if (strcmp(a.string, b.string) == 0) {
+                    return TObj;
+                }
+                
+            case CHAR:
+                if (a.c == b.c) {
+                    return TObj;
+                }
+                
             default:
                 break;
         }
@@ -198,6 +208,20 @@ SExpr makeNIL(void) {
     return expr;
 }
 
+SExpr stringToSExpr(const char* str) {
+    SExpr expr;
+    expr.type = STRING;
+    expr.string = strdup(str);
+    return expr;
+}
+
+SExpr charToSExpr(char c) {
+    SExpr expr;
+    expr.type = CHAR;
+    expr.c = c;
+    return expr;
+}
+
 void printSExprDepth(SExpr expr, int depth) {
     printf("Type: %s", SExprName(expr.type));
     switch (expr.type) {
@@ -230,6 +254,14 @@ void printSExprDepth(SExpr expr, int depth) {
             
         case REAL:
             printf("\t%f\n", expr.r);
+            break;
+            
+        case STRING:
+            printf("\t%s\n", expr.string);
+            break;
+            
+        case CHAR:
+            printChar(expr.c);
             break;
             
         default:
@@ -312,6 +344,14 @@ void printSExpr(SExpr expr) {
             printf("%f", expr.r);
             break;
             
+        case STRING:
+            printf("%s", expr.string);
+            break;
+            
+        case CHAR:
+            printChar(expr.c);
+            break;
+            
         default:
             printf("");
             break;
@@ -344,6 +384,14 @@ const char *SExprName(SExprType type) {
             return "REAL";
             break;
             
+        case STRING:
+            return "STRING";
+            break;
+        
+        case CHAR:
+            return "CHAR";
+            break;
+            
         default:
             return "INVALID";
             break;
@@ -368,6 +416,14 @@ SExpr readSExpr(FILE *fp) {
             
         case TOKEN_REAL:
             expr = realToSExpr(token.value.r);
+            break;
+        
+        case TOKEN_STRING:
+            expr = stringToSExpr(token.value.str);
+            break;
+            
+        case TOKEN_CHAR:
+            expr = charToSExpr(token.value.c);
             break;
             
         case TOKEN_OPENP:
@@ -726,7 +782,7 @@ SExpr lessEQ(SExpr a, SExpr b) {
     }
 }
 
-SExpr not(SExpr arg){
+SExpr not(SExpr arg) {
     if (isNIL(arg)) {
         return TObj;
     } else {
@@ -734,10 +790,156 @@ SExpr not(SExpr arg){
     }
 }
 
-SExpr cons(SExpr arg){
+SExpr cons(SExpr arg) {
     if (isCONS(arg)) {
         return TObj;
     } else {
         return NILObj;
+    }
+}
+
+SExpr strlength(SExpr arg) {
+    if (arg.type != STRING) {
+        return stringToSExpr("Not of String Type");
+    } else {
+        return intToSExpr(strlen(arg.string));
+    }
+}
+
+SExpr str(SExpr arg) {
+    if (arg.type == STRING) {
+        return TObj;
+    } else {
+        return NILObj;
+    }
+}
+
+SExpr strup(SExpr arg) {
+    if (arg.type != STRING) {
+        return stringToSExpr("Not of Type STRING");
+    } else {
+        char buf[BUFSIZ] = {0};
+        for (int i = 0; i < strlen(arg.string); i++) {
+            buf[i] = toupper(arg.string[i]);
+        }
+        return stringToSExpr(buf);
+    }
+}
+
+SExpr strlow(SExpr arg) {
+    if (arg.type != STRING) {
+        return stringToSExpr("Not of Type STRING");
+    } else {
+        char buf[BUFSIZ] = {0};
+        for (int i = 0; i < strlen(arg.string); i++) {
+            buf[i] = tolower(arg.string[i]);
+        }
+        return stringToSExpr(buf);
+    }
+}
+
+SExpr evalAppend(SExpr args) {
+    if (!isNIL(cdr(args))) {
+        SExpr rest = evalAppend(cdr(args));
+        return append(car(args), rest);
+    } else {
+        return car(args);
+    }
+}
+
+SExpr append(SExpr a, SExpr b) {
+    if ((a.type != STRING) || (b.type != STRING)) {
+        return stringToSExpr("Not of Type STRING");
+    } else {
+        int alen = (int) strlen(a.string);
+        int blen = (int) strlen(b.string);
+        if ((alen + blen) >= BUFSIZ) {
+            fail("Strings are too long and exceed BUFSIZ");
+        }
+        
+        char buf[BUFSIZ] = {0};
+        for (unsigned int  i = 0; i < alen; i++) {
+            buf[i] = a.string[i];
+        }
+        for (int i = alen; i < (alen + blen); i++) {
+            buf[i] = b.string[i - alen];
+        }
+        return stringToSExpr(buf);
+    }
+}
+
+SExpr substring(SExpr string, int start, int end) {
+    char buf[BUFSIZ] = {0};
+    for (int i = start; i < end; i++) {
+        buf[i - start] = string.string[i];
+    }
+    SExpr substring = stringToSExpr(strdup(buf));
+    return substring;
+}
+
+SExpr evalSubstring(SExpr args){
+    SExpr str = car(args);
+    SExpr start = cadr(args);
+    check(str.type == STRING);
+    check(start.type == INT);
+    SExpr end;
+    if (isNIL(cddr(args))) {
+        end.type = INT;
+        end.i = strlen(str.string);
+    } else {
+        end = car(cddr(args));
+    }
+    
+    return substring(str, (int) start.i, (int) end.i);
+}
+
+SExpr Char(SExpr arg) {
+    if (arg.type == CHAR) {
+        return TObj;
+    } else {
+        return NILObj;
+    }
+}
+
+SExpr charToInt(SExpr arg) {
+    if (arg.type == CHAR) {
+        return intToSExpr(arg.c);
+    } else {
+        return stringToSExpr("Not of Type CHAR");
+    }
+}
+
+SExpr intToChar(SExpr arg) {
+    if (arg.type == INT) {
+        return charToSExpr(arg.i);
+    } else {
+        return stringToSExpr("Not of Type INT");
+    }
+}
+
+SExpr evalListToString(SExpr args) {
+    if (!isNIL(cdr(args))) {
+        SExpr rest = evalListToString(cdr(args));
+        char buf[2] = {0};
+        buf[0] = car(args).c;
+        return append(stringToSExpr(strdup(buf)), rest);
+    } else {
+        char buf[2] = {0};
+        buf[0] = car(args).c;
+        return stringToSExpr(strdup(buf));
+    }
+}
+
+SExpr stringToList(SExpr arg){
+    if (arg.type != STRING) {
+        return stringToSExpr("Not of Type STRING");
+    } else {
+        SExpr car = charToSExpr(arg.string[0]);
+        if (strlen(arg.string) == 1) {
+            return consToSExpr(car, NILObj);
+        } else {
+            SExpr rest = substring(arg, 1, (int) strlen(arg.string));
+            return consToSExpr(car, stringToList(rest));
+        }
     }
 }
