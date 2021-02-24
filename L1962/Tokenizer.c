@@ -252,7 +252,7 @@ void printToken(Token token) {
     }
 }
 
-void printChar(char c) {
+void printChar(unsigned char c) {
     char *str;
     switch (c) {
         case 0: // Doesn't work, 0 is used as reference else where
@@ -281,7 +281,7 @@ void printChar(char c) {
                 printf("#\\%c", c);
                 return;
             } else {
-                printf("#\\%3o", c);
+                printf("#\\%03o", c);
                 return;
             }
             

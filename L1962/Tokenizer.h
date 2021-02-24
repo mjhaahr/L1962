@@ -48,7 +48,7 @@ typedef union {
     double r;           // for TOKEN_REAL
     char e;             // for TOKEN_INVALID (if error)
     const char *str;    // for TOKEN_STRING
-    char c;             // for TOKEN_CHAR
+    unsigned char c;    // for TOKEN_CHAR
 } TokenValue;
 
 
@@ -85,7 +85,7 @@ void printToken(Token token);
     Prints a char according to style
  @param c   The char to print
  */
-void printChar(char c);
+void printChar(unsigned char c);
 
 /**
     Returns the name of a TokenType as a string from the enum

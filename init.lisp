@@ -55,3 +55,5 @@
 	(if (nil? x)
 		y
 		(cons (car x) (merge-list (cdr x) y))))
+		
+(defun string-copy (x) (substring x 0))

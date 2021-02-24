@@ -869,6 +869,7 @@ SExpr append(SExpr a, SExpr b) {
 }
 
 SExpr substring(SExpr string, int start, int end) {
+    check(string.type == STRING);
     char buf[BUFSIZ] = {0};
     for (int i = start; i < end; i++) {
         buf[i - start] = string.string[i];
