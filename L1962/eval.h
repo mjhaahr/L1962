@@ -66,6 +66,14 @@ SExpr evalList(SExpr c, SExpr env);
 void addBuiltin(const char *name, SExpr (*apply)(SExpr args));
 
 /**
+    Loops over the given SExpr and looks for commas and evals
+ @param expr The SExpr to eval the commas in
+ @param env The environment to eval to (for local variables), scope
+ @return The SExpr with all the commas evaled
+ */
+SExpr lookForCommas(SExpr expr, SExpr env);
+
+/**
     set! special form eval (assigns variables in the environmet)
  @param name The name for the variable
  @param value The value to assign to the variable, already evaluated

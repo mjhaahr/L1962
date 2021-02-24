@@ -34,8 +34,9 @@ typedef enum TokenType {
     TOKEN_OPENB = 8,        // [
     TOKEN_CLOSEB = 9,       // [
     TOKEN_STRING = 10,      // a string
-    TOKEN_BQUOTE = 11,      // `
-    TOKEN_CHAR = 12,        // Chars
+    TOKEN_CHAR = 11,        // Chars
+    TOKEN_BQUOTE = 12,      // `
+    TOKEN_COMMA = 13,       // Comma
 } TokenType;
 
 

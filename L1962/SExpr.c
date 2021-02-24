@@ -25,6 +25,8 @@ const SExpr NILObj  = { NIL };
 SExpr TObj  = { SYMBOL };
 
 const char *sym_QUOTE = NULL;
+const char *sym_BQUOTE = NULL;
+const char *sym_COMMA = NULL;
 const char *sym_SETBang = NULL;
 const char *sym_LAMBDA = NULL;
 const char *sym_DEFINE = NULL;
@@ -44,6 +46,8 @@ const char *sym_APPLY = NULL;
 
 void SExprInit(void) {
     sym_QUOTE = struniq("quote");
+    sym_BQUOTE = struniq("`");
+    sym_COMMA = struniq(",");
     sym_SETBang = struniq("set!");
     sym_LAMBDA = struniq("lambda");
     sym_DEFINE = struniq("define");
@@ -439,6 +443,24 @@ SExpr readSExpr(FILE *fp) {
             quote.type = SYMBOL;
             quote.symbol = sym_QUOTE;
             expr = consToSExpr(quote, consToSExpr(readSExpr(fp), NILObj));
+            
+            break;
+            }
+        
+        case TOKEN_BQUOTE: {
+            SExpr quote;
+            quote.type = SYMBOL;
+            quote.symbol = sym_BQUOTE;
+            expr = consToSExpr(quote, consToSExpr(readSExpr(fp), NILObj));
+            
+            break;
+            }
+        
+        case TOKEN_COMMA: {
+            SExpr comma;
+            comma.type = SYMBOL;
+            comma.symbol = sym_COMMA;
+            expr = consToSExpr(comma, consToSExpr(readSExpr(fp), NILObj));
             
             break;
             }

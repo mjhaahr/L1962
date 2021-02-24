@@ -13,6 +13,8 @@
 #include "Tokenizer.h"
 
 extern const char *sym_QUOTE; // Quote symbol value
+extern const char *sym_BQUOTE; // Backquote symbol value
+extern const char *sym_COMMA; // Comma symbol value
 extern const char *sym_SETBang; // set! symbol value
 extern const char *sym_LAMBDA; // lambda symbol value
 extern const char *sym_DEFINE; // define symbol value

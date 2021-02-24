@@ -132,7 +132,17 @@ Token readToken(FILE *fp) {
         token.type = TOKEN_QUOTE;
         unread = token;
         return token;
-    } else if (c == '"') {
+    } else if (c == '`') {
+        index++;
+        token.type = TOKEN_BQUOTE;
+        unread = token;
+        return token;
+    } else if (c == ',') {
+        index++;
+        token.type = TOKEN_COMMA;
+        unread = token;
+        return token;
+    }else if (c == '"') {
         id = TOKEN_STRING;
         for (c = getc(fp); c != '"'; c = getc(fp)) { // While c is not a closed quote
             if (c == '\\') {    // Escape char, skip and copy

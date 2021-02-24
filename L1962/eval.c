@@ -137,8 +137,13 @@ SExpr eval(SExpr sexpr, SExpr env) {
             // Special Forms and Macros
             const char *sym = car(sexpr).symbol;
             if (sym == sym_QUOTE) {
-                assert(cddr(sexpr).type == NIL);
+                check(cddr(sexpr).type == NIL);
                 return cadr(sexpr);
+            } else if (sym == sym_BQUOTE) {
+                assert(cddr(sexpr).type == NIL);
+                return lookForCommas(cadr(sexpr), env);
+            } else if (sym == sym_COMMA) {
+                fail("Comma found outside of backquote");
             } else if (sym == sym_SETBang) {
                 check(cadr(sexpr).type == SYMBOL);
                 return evalSETBang(cadr(sexpr), eval(car(cddr(sexpr)), env), env);
@@ -210,6 +215,18 @@ SExpr evalList(SExpr c, SExpr env) {
     } else {
         check(isLIST(cdr(c)));
         return consToSExpr(eval(car(c), env), evalList(cdr(c), env));
+    }
+}
+
+SExpr lookForCommas(SExpr expr, SExpr env) {
+    if (isCONS(expr)) {
+        if (car(expr).symbol == sym_COMMA) { // If comma
+            return eval(cadr(expr), env);
+        } else {
+            return consToSExpr(lookForCommas(car(expr), env), lookForCommas(cdr(expr), env));
+        }
+    } else {
+        return expr;
     }
 }
 
