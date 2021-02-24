@@ -278,7 +278,7 @@ void printChar(char c) {
                 printf("#\\%c", c);
                 return;
             } else {
-                printf("#\\u%x", c);
+                printf("#\\%3o", c);
                 return;
             }
             
