@@ -144,8 +144,11 @@ Token readToken(FILE *fp) {
         buf[index] = 0;     // End Token Value
     } else if (c == '#') {
         token.type = TOKEN_CHAR;
-        getc(fp);
+        char slash = getc(fp);
         token.value.c = getc(fp);
+        if (slash != '\\') {
+            fail("Poorly Formatted Character");
+        }
         return token;
     } else {
         token.type = TOKEN_INVALID;

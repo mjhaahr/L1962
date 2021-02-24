@@ -11,7 +11,6 @@
 #include <stdint.h>
 
 #include "Tokenizer.h"
-#include "try.h"
 
 extern const char *sym_QUOTE; // Quote symbol value
 extern const char *sym_SETBang; // set! symbol value
@@ -483,6 +482,20 @@ SExpr charToInt(SExpr arg);
  @return the result as an SExpr
  */
 SExpr intToChar(SExpr arg);
+
+/**
+    char-upcase
+ @param arg The arg to upcase
+ @return the result as an SExpr
+ */
+SExpr charup(SExpr arg);
+
+/**
+    char-downcase
+ @param arg The arg to downcase
+ @return the result as an SExpr
+ */
+SExpr charlow(SExpr arg);
 /**
     Eval list->string
  @param args Turns a list of char into a string

@@ -917,6 +917,24 @@ SExpr intToChar(SExpr arg) {
     }
 }
 
+SExpr charup(SExpr arg) {
+    if (arg.type == CHAR) {
+        arg.c = toupper(arg.c);
+        return arg;
+    } else {
+        return stringToSExpr("Not of Type CHAR");
+    }
+}
+
+SExpr charlow(SExpr arg) {
+    if (arg.type == CHAR) {
+        arg.c = tolower(arg.c);
+        return arg;
+    } else {
+        return stringToSExpr("Not of Type CHAR");
+    }
+}
+
 SExpr evalListToString(SExpr args) {
     if (!isNIL(cdr(args))) {
         SExpr rest = evalListToString(cdr(args));

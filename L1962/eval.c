@@ -24,6 +24,8 @@ DEFINE_WRAPPER_1(stringToList);
 DEFINE_WRAPPER_1(Char);
 DEFINE_WRAPPER_1(charToInt);
 DEFINE_WRAPPER_1(intToChar);
+DEFINE_WRAPPER_1(charup);
+DEFINE_WRAPPER_1(charlow);
 
 DEFINE_WRAPPER_2(consToSExpr);
 DEFINE_WRAPPER_2(assoc);
@@ -85,6 +87,9 @@ void evalInit(void) {
     addBuiltin("char?", apply_Char);
     addBuiltin("char->integer", apply_charToInt);
     addBuiltin("integer->char", apply_intToChar);
+    
+    addBuiltin("char-upcase", apply_charup);
+    addBuiltin("char-downcase", apply_charlow);
 }
 
 SExpr eval(SExpr sexpr, SExpr env) {

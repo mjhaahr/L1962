@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "struniq.h"
+#include "try.h"
 
 
 /**
