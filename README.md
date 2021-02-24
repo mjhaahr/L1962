@@ -13,4 +13,6 @@ Implements try-catch and try-finally failure handling utilizing macros and setjm
 
 Implements a version of struniq in conjunction with a hash set (using the sdbm hashing algorithm) to allow for storage of previously seen symbols.
 
+Supports backquote for data-structure templates.
+
 Utilizes a combination of Lisp and Scheme-like function names and removes some of the historical names that no longer make sense in modern contexts.
