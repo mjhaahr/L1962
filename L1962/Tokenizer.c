@@ -107,77 +107,89 @@ Token readToken(FILE *fp) {
         }
         ungetc(c, fp);      // Roll position in fp back to allow proper reading
         buf[index] = 0;     // End Token Value
-    } else if (c == '(') { // TODO: rebuild as switch
-        index++;
-        token.type = TOKEN_OPENP;
-        unread = token;
-        return token;
-    } else if (c == ')') {
-        index++;
-        token.type = TOKEN_CLOSEP;
-        unread = token;
-        return token;
-    } else if (c == '[') {
-        index++;
-        token.type = TOKEN_OPENB;
-        unread = token;
-        return token;
-    } else if (c == ']') {
-        index++;
-        token.type = TOKEN_CLOSEB;
-        unread = token;
-        return token;
-    } else if (c == '\'') {
-        index++;
-        token.type = TOKEN_QUOTE;
-        unread = token;
-        return token;
-    } else if (c == '`') {
-        index++;
-        token.type = TOKEN_BQUOTE;
-        unread = token;
-        return token;
-    } else if (c == ',') {
-        index++;
-        token.type = TOKEN_COMMA;
-        unread = token;
-        return token;
-    }else if (c == '"') {
-        id = TOKEN_STRING;
-        for (c = getc(fp); c != '"'; c = getc(fp)) { // While c is not a closed quote
-            if (c == '\\') {    // Escape char, skip and copy
-                buf[index++] = getc(fp);
-            } else {
-                buf[index++] = c;
-            }
-        }
-        buf[index] = 0;     // End Token Value
-    } else if (c == '#') {
-        token.type = TOKEN_CHAR;
-        char slash = getc(fp);
-        token.value.c = getc(fp);
-        if (slash != '\\') {
-            fail("Poorly Formatted Character");
-        }
-        return token;
     } else {
-        token.type = TOKEN_INVALID;
-        if (isspace(c)) {    // Valid Token break (whitespace or ';')
-            token.value.e = 0;
-        } else {            // Invalid Token type (char not valid)
-            token.value.e = c;
+        switch (c) {
+            case '(':
+                index++;
+                token.type = TOKEN_OPENP;
+                unread = token;
+                return token;
+                
+            case ')':
+                index++;
+                token.type = TOKEN_CLOSEP;
+                unread = token;
+                return token;
+                
+            case '[':
+                index++;
+                token.type = TOKEN_OPENB;
+                unread = token;
+                return token;
+                
+            case ']':
+                index++;
+                token.type = TOKEN_CLOSEB;
+                unread = token;
+                return token;
+                
+            case '\'':
+                index++;
+                token.type = TOKEN_QUOTE;
+                unread = token;
+                return token;
+                
+            case '`':
+                index++;
+                token.type = TOKEN_BQUOTE;
+                unread = token;
+                return token;
+                
+            case ',':
+                index++;
+                token.type = TOKEN_COMMA;
+                unread = token;
+                return token;
+                
+            case '"':
+                id = TOKEN_STRING;
+                for (c = getc(fp); c != '"'; c = getc(fp)) { // While c is not a closed quote
+                    if (c == '\\') {    // Escape char, skip and copy
+                        buf[index++] = getc(fp);
+                    } else {
+                        buf[index++] = c;
+                    }
+                }
+                buf[index] = 0;     // End Token Value
+                break;
+            case '#':
+                token.type = TOKEN_CHAR;
+                char slash = getc(fp);
+                token.value.c = getc(fp);
+                if (slash != '\\') {
+                    fail("Poorly Formatted Character");
+                }
+                return token;
+                
+            default:
+                token.type = TOKEN_INVALID;
+                if (isspace(c)) {    // Valid Token break (whitespace or ';')
+                    token.value.e = 0;
+                } else {            // Invalid Token type (char not valid)
+                    token.value.e = c;
+                }
+                
+                if (c == ';') {
+                    for (c = getc(fp);  (c != EOF && c != '\n'); c = getc(fp)); // If ';' then rest of line is comment, keep going until '\n' or EOF is seen
+                    ungetc(c, fp);      // Roll position in fp back to allow proper reading
+                    token.value.e = 0;
+                }
+                while (token.type == TOKEN_INVALID) {
+                    token = readToken(fp);
+                    
+                }
+                return token;
         }
-        
-        if (c == ';') {
-            for (c = getc(fp);  (c != EOF && c != '\n'); c = getc(fp)); // If ';' then rest of line is comment, keep going until '\n' or EOF is seen
-            ungetc(c, fp);      // Roll position in fp back to allow proper reading
-            token.value.e = 0;
-        }
-        while (token.type == TOKEN_INVALID) {
-            token = readToken(fp);
-            
-        }
-        return token;
     }
     
     // If it reaches the end of the if without returning, it is of type INT, REAL, or TOKEN_SYMBOL, that is given
