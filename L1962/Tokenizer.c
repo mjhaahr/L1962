@@ -107,7 +107,7 @@ Token readToken(FILE *fp) {
         }
         ungetc(c, fp);      // Roll position in fp back to allow proper reading
         buf[index] = 0;     // End Token Value
-    } else if (c == '(') {
+    } else if (c == '(') { // TODO: rebuild as switch
         index++;
         token.type = TOKEN_OPENP;
         unread = token;
@@ -184,15 +184,28 @@ Token readToken(FILE *fp) {
     
     
     token.type = id;
-    if (id == TOKEN_INT) {             // if INT, atoi()
-        token.value.i = atoi(buf);
-    } else if (id == TOKEN_REAL) {     // if REAL, atof()
-        token.value.r = atof(buf);
-    } else if (id == TOKEN_SYMBOL) {   // if SYMBOL, write the buffer (via struniq)
-        token.value.s = struniq(buf);
-    } else if (id == TOKEN_STRING) {   // if STRING, strdup
-        token.value.str = strdup(buf);
+    
+    switch (id) {
+        case TOKEN_INT: // if INT, atoi()
+            token.value.i = atoi(buf);
+            break;
+            
+        case TOKEN_REAL: // if REAL, atof()
+            token.value.r = atof(buf);
+            break;
+            
+        case TOKEN_SYMBOL: // if SYMBOL, write the buffer (via struniq)
+            token.value.s = struniq(buf);
+            break;
+            
+        case TOKEN_STRING: // if STRING, strdup
+            token.value.str = strdup(buf);
+            break;
+            
+        default:
+            break;
     }
+    
     unread = token;
     return token;
 }

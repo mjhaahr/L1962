@@ -13,6 +13,7 @@
 
 const char *struniq(const char *s) {
     char buf[(strlen(s) + 1)];
+    buf[strlen(s)] = 0;
     for(int i = 0; s[i]; i++) {
         buf[i] = tolower(s[i]);
     }
