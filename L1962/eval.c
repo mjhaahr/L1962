@@ -157,6 +157,8 @@ SExpr eval(SExpr sexpr, SExpr env) {
                 return evalDEFUN(cadr(sexpr), car(cddr(sexpr)), cdr(cddr(sexpr)));
             } else if (sym == sym_DEFVAR) {
                 return evalDEFVAR(cadr(sexpr), cddr(sexpr));
+            } else if (sym == sym_MACRO) {
+                
             } else if (sym == sym_IF) {
                 if (cdr(cddr(sexpr)).type == NIL) {
                     return evalIf(cadr(sexpr), car(cddr(sexpr)), NILObj, env);

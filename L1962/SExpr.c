@@ -63,6 +63,7 @@ void SExprInit(void) {
     sym_PROGN = struniq("progn");
     sym_BEGIN = struniq("begin");
     sym_APPLY = struniq("apply");
+    sym_MACRO = struniq("macro");
     
     TObj.symbol = struniq("true");
 }

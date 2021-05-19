@@ -30,6 +30,7 @@ extern const char *sym_LET; // let symbol value
 extern const char *sym_PROGN; // progn symbol value
 extern const char *sym_BEGIN; // begin symbol value
 extern const char *sym_APPLY; // apply symbol value
+extern const char *sym_MACRO; // macro symbol value
 
 typedef enum { // SExpression Types
     NIL,    // Nothing
@@ -52,6 +53,8 @@ typedef struct Cons Cons;
 typedef struct Lambda Lambda;
 
 typedef struct Builtin Builtin;
+
+typedef struct Macro Macro;
 
 struct Builtin {
   SExpr (*apply)(SExpr args);
@@ -80,6 +83,10 @@ struct Lambda{ // Lisp style list notation
     SExpr params;
     SExpr exprs;
     SExpr env; // Support for Lexical scope
+};
+
+struct Macro {
+  SExpr *lambda;
 };
 
 
